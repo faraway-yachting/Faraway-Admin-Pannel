@@ -151,7 +151,7 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
                     };
                     toast.error(errorPayload?.error?.message || "Something went wrong.");
                 }
-            } catch (error) {
+            } catch {
                 toast.error("An unexpected error occurred");
             } finally {
                 setSubmitting(false);
