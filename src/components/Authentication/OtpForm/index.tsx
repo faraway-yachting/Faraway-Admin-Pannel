@@ -136,7 +136,14 @@ const OtpVerificationForm: React.FC = () => {
             <form onSubmit={formik.handleSubmit}>
                 <div className="px-6 sm:px-10 xl:px-12 space-y-5">
                     <div className="flex flex-col gap-4">
-                        <Image src="/images/logo.png" alt="logo" width={552} height={210} className="w-[15rem]" />
+                        <Image 
+                        src="/images/logo.png" 
+                        alt="logo" 
+                        width={552} 
+                        height={210} 
+                        className="w-[15rem] h-auto" 
+                        priority
+                    />
                         <h2 className="text-[#1E1E1E] text-[19px] font-bold font-plusjakarta">Anchor Your Dreams</h2>
                         <h2 className="text-[#012A50] text-[24px] font-bold font-plusjakarta">
                             OTP Verification

@@ -84,7 +84,13 @@ const Header: React.FC = () => {
             <IoSearchSharp className="text-[#999999] text-[24px] cursor-pointer" />
           </div>
           <div className="bg-white shadow-lg w-[43px] h-[43px] rounded-full flex items-center justify-center cursor-pointer relative">
-            <Image src="/images/bell.svg" alt="bell" width={16} height={19} />
+            <Image 
+              src="/images/bell.svg" 
+              alt="bell" 
+              width={16} 
+              height={19} 
+              className="w-4 h-5"
+            />
             <div className="absolute w-[24px] h-[24px] bg-[#001B48] rounded-full -top-2 -right-2 text-white font-inter font-semibold text-[12px] flex items-center justify-center">10</div>
           </div>
           <div className="relative" ref={dropdownRef}>

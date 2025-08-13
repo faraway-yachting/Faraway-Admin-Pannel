@@ -211,7 +211,7 @@ const BlogDetail = () => {
                   >
                     <div className="hidden md:block relative rounded-tl-3xl rounded-br-3xl w-full overflow-hidden">
                       <Image
-                        src={blogItem?.image}
+                        src={typeof blogItem?.image === 'string' ? blogItem.image : '/images/placeholder.jpg'}
                         alt="Blog image"
                         width={450}
                         height={258}
@@ -220,27 +220,27 @@ const BlogDetail = () => {
                       <div className="absolute top-3 right-4 z-10">
                         <button
                           className="cursor-pointer font-plusjakarta font-extrabold text-sm text-red-500 flex items-center gap-1 bg-[#012A50] backdrop-blur-sm p-2 rounded-full hover:bg-[#5F5C63] transition-colors"
-                          onClick={(e) => handleDeleteClick(e, blogItem._id)}
+                          onClick={(e) => blogItem._id && handleDeleteClick(e, blogItem._id)}
                         >
                           <FaTrash className="text-white text-lg" />
                         </button>
                       </div>
                       <div className="absolute bottom-0 bg-[#001B48] w-full py-4 rounded-tl-4xl">
                         <h3 className="font-plusjakarta font-extrabold text-center text-base md:text-lg lg:text-xl text-white leading-tight px-4">
-                          {blogItem.title.length > 27 ? `${blogItem.title.substring(0, 27)}...` : blogItem.title}
+                          {blogItem.title && blogItem.title.length > 27 ? `${blogItem.title.substring(0, 27)}...` : blogItem.title || 'Untitled'}
                         </h3>
                       </div>
                     </div>
                     <div className="pt-[4px] px-4 flex flex-col h-50">
-                      <p className="font-plusjakarta font-normal text-base lg:text-lg text-[#666666] mt-2 flex-1 overflow-hidden line-clamp-3">{blogItem.shortDescription.length > 200 ? `${blogItem.shortDescription.substring(0, 200)}...` : blogItem.shortDescription}</p>
+                      <p className="font-plusjakarta font-normal text-base lg:text-lg text-[#666666] mt-2 flex-1 overflow-hidden line-clamp-3">{blogItem.shortDescription && blogItem.shortDescription.length > 200 ? `${blogItem.shortDescription.substring(0, 200)}...` : blogItem.shortDescription || 'No description available'}</p>
                       <div className="flex items-center justify-center gap-2 mt-3">
                         <button
                           onClick={(e) => {
                             const currentStatus = blogItem.status || "draft";
                             if (currentStatus === "published") {
-                              handleUnpublishClick(e, blogItem._id);
+                              blogItem._id && handleUnpublishClick(e, blogItem._id);
                             } else {
-                              handlePublishClick(e, blogItem._id);
+                              blogItem._id && handlePublishClick(e, blogItem._id);
                             }
                           }}
                           disabled={publishingYachtId === blogItem._id}

@@ -20,7 +20,7 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
     const blogState = useSelector((state: RootState) => state.blog);
-    const { blogs, loading, error } = blogState;
+    const { currentBlog, loading, error } = blogState;
 
     useEffect(() => {
         if (id) {
@@ -31,9 +31,9 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
     const blogInfoData = [
         {
             array: [
-                { label: "Title", data: blogs?.title || "N/A" },
-                { label: "Slug", data: blogs?.slug || "N/A" },
-                { label: "Status", data: blogs?.status || "N/A" },
+                { label: "Title", data: currentBlog?.title || "N/A" },
+                { label: "Slug", data: currentBlog?.slug || "N/A" },
+                { label: "Status", data: currentBlog?.status || "N/A" },
             ],
             iconone: MdKeyboardArrowLeft,
             btn: "Back",
@@ -58,7 +58,7 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
         );
     }
 
-    if (!blogs) {
+    if (!currentBlog) {
         return (
             <div className="flex justify-center items-center h-64">
                 <div className="text-lg">No blog found</div>
@@ -103,14 +103,14 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
                                     </div>
                                 </div>
                             )}
-                            {blogs?.shortDescription?.trim() && (
+                            {currentBlog?.shortDescription?.trim() && (
                                 <div className="bg-white shadow-xs rounded-lg px-2 py-2 w-full mb-6">
                                     <h2 className="text-[#001B48] font-bold text-[18px] mb-2 pb-2 border-b border-[#CCCCCC]">
                                         Short Description
                                     </h2>
                                     <div className="prose max-w-full">
                                         <p className="text-[#222222] font-medium leading-relaxed">
-                                            {blogs.shortDescription}
+                                            {currentBlog.shortDescription}
                                         </p>
                                     </div>
                                 </div>
@@ -120,20 +120,21 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
 
                 </div>
                 <div>
-                    {blogs?.image && (
+                    {currentBlog?.image && (
                         <div className="bg-white shadow-xs rounded-lg px-2 py-2 w-full mb-6">
                             <p className="text-[#001B48] font-bold text-[18px] mb-2 pb-2 border-b border-[#CCCCCC]">
                                 Blog Image
                             </p>
-                            <div className="border border-[#CCCCCC] p-1.5 rounded-lg flex justify-center">
+                           {currentBlog.image && <div className="border border-[#CCCCCC] p-1.5 rounded-lg flex justify-center">
                                 <Image
-                                    src={blogs.image}
+                                    src={currentBlog.image as string}
                                     alt="Blog Image"
                                     width={400}
                                     height={250}
                                     className="rounded-lg w-full h-auto max-h-[300px] object-cover"
+                                    unoptimized={true}
                                 />
-                            </div>
+                            </div>}
                         </div>
                     )}
                 </div>
@@ -141,14 +142,14 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
             {/* Short Description */}
 
             {/* Detailed Description */}
-            {blogs?.detailDescription?.trim() && (
+            {currentBlog?.detailDescription?.trim() && (
                 <div className="bg-white shadow-xs rounded-lg px-2 py-2 w-full mb-6">
                     <h2 className="text-[#001B48] font-bold text-[18px] mb-2 pb-2 border-b border-[#CCCCCC]">
                         Detailed Description
                     </h2>
                     <div
                         className="prose max-w-full"
-                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blogs.detailDescription || "") }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentBlog.detailDescription || "") }}
                     />
                 </div>
             )}

@@ -24,7 +24,7 @@ interface ResetPasswordData {
   newPassword: string;
 }
 
-const API_URL = `https://faraway.thedevapp.online`;
+const API_URL = `https://awais.thedevapp.online`;
 
 export const signinUser = createAsyncThunk(
   "auth/signinUser",

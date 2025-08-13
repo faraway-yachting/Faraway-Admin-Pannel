@@ -43,7 +43,13 @@ const Drawer: React.FC<Props> = ({ menus, isOpen, onClose }) => {
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="relative flex items-center justify-center h-20 3xl:h-24 border-b border-gray-300">
-                    <Image src="/images/logo.png" alt="logo" width={200} height={51} className="lg:w-[165px] xl:w-[200px]" />
+                    <Image 
+            src="/images/logo.png" 
+            alt="logo" 
+            width={200} 
+            height={51} 
+            className="lg:w-[165px] xl:w-[200px] h-auto" 
+        />
                     <span
                         className="fixed right-[-12px] top-[66px] w-6 h-6 rounded-full rotate-180 bg-[#79BCD1] text-white flex justify-center items-center"
                         onClick={onClose}

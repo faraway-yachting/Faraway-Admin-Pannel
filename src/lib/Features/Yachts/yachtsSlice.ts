@@ -145,7 +145,7 @@ export const addYachts = createAsyncThunk<
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "https://faraway.thedevapp.online/yacht/add-yacht",
+        "https://awais.thedevapp.online/yacht/add-yacht",
         credentials,
         {
           withCredentials: true,
@@ -183,7 +183,7 @@ export const getYachts = createAsyncThunk<
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://faraway.thedevapp.online/yacht/all-yachts?page=${page}&limit=${limit}`,
+        `https://awais.thedevapp.online/yacht/all-yachts?page=${page}&limit=${limit}`,
         {
           withCredentials: true,
           headers: {
@@ -217,7 +217,7 @@ export const getYachtsById = createAsyncThunk(
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://faraway.thedevapp.online/yacht?id=${yachtsId}`,
+        `https://awais.thedevapp.online/yacht?id=${yachtsId}`,
         {
           withCredentials: true,
           headers: {
@@ -246,7 +246,7 @@ export const updateYachts = createAsyncThunk(
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        `https://faraway.thedevapp.online/yacht/edit-yacht?id=${yachtsId}`,
+        `https://awais.thedevapp.online/yacht/edit-yacht?id=${yachtsId}`,
         payload,
         {
           withCredentials: true,
@@ -285,7 +285,7 @@ export const deleteYachts = createAsyncThunk<
     try {
       const token = localStorage.getItem("token");
       const response = await axios.delete(
-        `https://faraway.thedevapp.online/yacht/delete-yacht?id=${id}`,
+        `https://awais.thedevapp.online/yacht/delete-yacht?id=${id}`,
         {
           withCredentials: true,
           headers: {
@@ -323,7 +323,7 @@ export const publishYacht = createAsyncThunk<
         status: status
       };
       const response = await axios.patch(
-        `https://faraway.thedevapp.online/yacht/update-status?id=${yachtId}`,
+        `https://awais.thedevapp.online/yacht/update-status?id=${yachtId}`,
         payload,
         {
           withCredentials: true,

@@ -3,15 +3,15 @@ import axios, { AxiosError } from "axios";
 
 // Types
 export interface Blog {
-  _id: string;
-  title: string;
-  slug: string;
-  shortDescription: string;
-  detailDescription: string;
-  image: string;
+  _id?: string;
+  title?: string;
+  slug?: string;
+  shortDescription?: string;
+  detailDescription?: string;
+  image?: File | string; // stored image URL from backend
   status?: "draft" | "published"; // Make status optional since it might not exist in API response
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface BlogResponse {
@@ -32,7 +32,9 @@ export interface AddBlogPayload {
 
 export interface UpdateBlogPayload {
   blogId: string;
-  data: Partial<AddBlogPayload>;
+  data: Partial<Omit<AddBlogPayload, "image">> & {
+    image?: File | string; // allow file, URL, or undefined
+  };
 }
 
 export interface GetBlogsParams {
@@ -49,6 +51,7 @@ export interface PublishBlogPayload {
 interface BlogState {
   loading: boolean;
   blogs: Blog | null;
+  currentBlog: Blog | null; // Add currentBlog property
   allBlogs: Blog[];
   error: string | null;
   addLoading: boolean;
@@ -63,6 +66,7 @@ interface BlogState {
 const initialState: BlogState = {
   loading: false,
   blogs: null,
+  currentBlog: null, // Initialize currentBlog
   allBlogs: [],
   error: null,
   addLoading: false,
@@ -94,7 +98,7 @@ export const addBlog = createAsyncThunk<
       formData.append("image", credentials.image);
 
       const response = await axios.post(
-        "https://faraway.thedevapp.online/blog/add-blog",
+        "https://awais.thedevapp.online/blog/add-blog",
         formData,
         {
           withCredentials: true,
@@ -132,7 +136,7 @@ export const getBlogs = createAsyncThunk<
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://faraway.thedevapp.online/blog/all-blogs?page=${page}&limit=${limit}`,
+        `https://awais.thedevapp.online/blog/all-blogs?page=${page}&limit=${limit}`,
         {
           withCredentials: true,
           headers: {
@@ -158,82 +162,43 @@ export const getBlogs = createAsyncThunk<
 );
 
 // Get Blog by ID
+// Get Blog by ID
 export const getBlogById = createAsyncThunk<
-  { blogs: Blog },
+  Blog,
   { blogId: string },
   { rejectValue: { error: { message: string } } }
 >(
   "blog/getBlogById",
-  async (
-    { blogId },
-    { rejectWithValue }
-  ) => {
+  async ({ blogId }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
+
+      const response = await axios.get(
+        `https://awais.thedevapp.online/blog/blogByID?id=${blogId}`,
+        {
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      return response.data.data; // ensure this is a single blog object
+     
+    } catch (error) {
+      let message = "Something went wrong";
       
-      // Try different endpoint patterns
-      let response;
-      let error;
-      
-      try {
-        // Try with query parameter
-        response = await axios.get(
-          `https://faraway.thedevapp.online/blog/blogByID?id=${blogId}`,
-          {
-            withCredentials: true,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-      } catch {
-        try {
-          // Try with path parameter
-          response = await axios.get(
-            `https://faraway.thedevapp.online/blog/blogByID/${blogId}`,
-            {
-              withCredentials: true,
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-        } catch {
-          try {
-            // Try with get-blog endpoint
-            response = await axios.get(
-              `https://faraway.thedevapp.online/blog/get-blog/${blogId}`,
-              {
-                withCredentials: true,
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-          } catch (err3) {
-            error = err3;
-          }
+      // Safely extract error message
+      if (error && typeof error === 'object') {
+        if ('response' in error) {
+          const axiosError = error as any;
+          message = axiosError.response?.data?.message ||
+                    axiosError.response?.data?.error?.message ||
+                    axiosError.message ||
+                    "API request failed";
+        } else if ('message' in error) {
+          message = (error as any).message;
         }
       }
       
-      if (error) {
-        throw error;
-      }
-      
-      if (!response) {
-        throw new Error("No response received from API");
-      }
-      
-      return {
-        blogs: response.data.data || response.data
-      };
-    } catch (error: unknown) {
-      const axiosError = error as AxiosError<{ message: string; error?: { message: string } }>;
-      const message =
-        axiosError.response?.data?.message ||
-        axiosError.response?.data?.error?.message ||
-        axiosError.message ||
-        "Something went wrong";
       return rejectWithValue({ error: { message } });
     }
   }
@@ -242,7 +207,7 @@ export const getBlogById = createAsyncThunk<
 // Update Blog
 export const updateBlog = createAsyncThunk<
   Blog,
-  UpdateBlogPayload,
+  { blogId: string; data: Partial<Blog> & { image?: File | string } },
   { rejectValue: { error: { message: string } } }
 >(
   "blog/updateBlog",
@@ -251,76 +216,66 @@ export const updateBlog = createAsyncThunk<
       const token = localStorage.getItem("token");
       const formData = new FormData();
 
-      if (data.title) formData.append("title", data.title);
-      if (data.slug) formData.append("slug", data.slug);
-      if (data.shortDescription) formData.append("shortDescription", data.shortDescription);
-      if (data.detailDescription) formData.append("detailDescription", data.detailDescription);
-      if (data.status) formData.append("status", data.status);
-      if (data.image) formData.append("image", data.image);
-
-      // Try different endpoint patterns for blog update
-      let response;
-      
-      try {
-        // Try the original endpoint
-        response = await axios.put(
-          `https://faraway.thedevapp.online/blog/edit-blog/${blogId}`,
-          formData,
-          {
-            withCredentials: true,
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          // Handle special cases for specific fields
+          if (key === 'image' && value && typeof value === 'object' && 'name' in value) {
+            formData.append('image', value as File);
+          } else if (typeof value === 'string' && value.trim() !== '') {
+            formData.append(key, value.trim());
+          } else if (typeof value !== 'string') {
+            formData.append(key, value as any);
           }
-        );
-      } catch {
-        try {
-          // Try with query parameter
-          response = await axios.put(
-            `https://faraway.thedevapp.online/blog/edit-blog?id=${blogId}`,
-            formData,
-            {
-              withCredentials: true,
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
-              },
-            }
-          );
-        } catch {
-          // Try with PATCH method
-          response = await axios.patch(
-            `https://faraway.thedevapp.online/blog/edit-blog/${blogId}`,
-            formData,
-            {
-              withCredentials: true,
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
-              },
-            }
-          );
+        }
+      });
+
+
+
+      // Check if FormData is empty
+      if (formData.entries().next().done) {
+        throw new Error("No valid data to update");
+      }
+
+      const response = await axios.put(
+        `https://awais.thedevapp.online/blog/edit-blog?id=${blogId}`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+
+      
+      if (response?.data?.error) {
+        throw new Error(response.data.error.message || "API returned an error");
+      }
+
+      return response.data;
+    } catch (error) {
+      let message = "Something went wrong";
+      
+      // Safely extract error message
+      if (error && typeof error === 'object') {
+        if ('response' in error) {
+          const axiosError = error as any;
+          message = axiosError.response?.data?.message ||
+                    axiosError.response?.data?.error?.message ||
+                    axiosError.message ||
+                    "API request failed";
+        } else if ('message' in error) {
+          message = (error as any).message;
         }
       }
       
-      if (response?.data.error) {
-        throw new Error(
-          response?.data?.error?.message || "Something went wrong"
-        );
-      }
-      return response.data;
-    } catch (error: unknown) {
-      const axiosError = error as AxiosError<{ message: string; error?: { message: string } }>;
-      const message =
-        axiosError.response?.data?.message ||
-        axiosError.response?.data?.error?.message ||
-        axiosError.message ||
-        "Something went wrong";
       return rejectWithValue({ error: { message } });
     }
   }
 );
+
 
 // Delete Blog
 export const deleteBlog = createAsyncThunk<
@@ -339,7 +294,7 @@ export const deleteBlog = createAsyncThunk<
       try {
         // Try yacht-style endpoint
         response = await axios.delete(
-          `https://faraway.thedevapp.online/blog/delete-blog?id=${blogId}`,
+          `https://awais.thedevapp.online/blog/delete-blog?id=${blogId}`,
           {
             withCredentials: true,
             headers: {
@@ -350,7 +305,7 @@ export const deleteBlog = createAsyncThunk<
       } catch {
         // Try blog-specific endpoint
         response = await axios.delete(
-          `https://faraway.thedevapp.online/blog/delete-blog/${blogId}`,
+          `https://awais.thedevapp.online/blog/delete-blog/${blogId}`,
           {
             withCredentials: true,
             headers: {
@@ -396,7 +351,7 @@ export const publishBlog = createAsyncThunk<
       try {
         // Try yacht-style endpoint
         response = await axios.patch(
-          `https://faraway.thedevapp.online/blog/update-status?id=${blogId}`,
+          `https://awais.thedevapp.online/blog/update-status?id=${blogId}`,
           { status },
           {
             withCredentials: true,
@@ -410,7 +365,7 @@ export const publishBlog = createAsyncThunk<
         try {
           // Try blog-specific endpoint
           response = await axios.patch(
-            `https://faraway.thedevapp.online/blog/update-status${blogId}`,
+            `https://awais.thedevapp.online/blog/update-status${blogId}`,
             { status },
             {
               withCredentials: true,
@@ -423,7 +378,7 @@ export const publishBlog = createAsyncThunk<
         } catch {
           // Try using the update-blog endpoint with status
           response = await axios.put(
-            `https://faraway.thedevapp.online/blog/update-status${blogId}`,
+            `https://awais.thedevapp.online/blog/update-status${blogId}`,
             { status },
             {
               withCredentials: true,
@@ -510,7 +465,7 @@ const blogSlice = createSlice({
       })
       .addCase(getBlogById.fulfilled, (state, action) => {
         state.loading = false;
-        state.blogs = action.payload.blogs;
+        state.currentBlog = action.payload; // Assign to currentBlog
       })
       .addCase(getBlogById.rejected, (state, action) => {
         state.loading = false;
@@ -526,6 +481,7 @@ const blogSlice = createSlice({
       .addCase(updateBlog.fulfilled, (state, action) => {
         state.addLoading = false;
         state.blogs = action.payload;
+        state.currentBlog = action.payload; // Also update currentBlog
       })
       .addCase(updateBlog.rejected, (state, action) => {
         state.addLoading = false;
@@ -568,4 +524,4 @@ const blogSlice = createSlice({
 });
 
 export const { clearError, clearBlogs } = blogSlice.actions;
-export default blogSlice.reducer; 
+export default blogSlice.reducer 

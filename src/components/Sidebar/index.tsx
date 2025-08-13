@@ -38,7 +38,7 @@ const Sidebar: React.FC<Props> = ({ menus }) => {
             alt="logo"
             width={200}
             height={51}
-            className="lg:w-[165px] xl:w-[200px]"
+            className="lg:w-[165px] xl:w-[200px] h-auto"
           />
         </button>
       </div>
