@@ -60,7 +60,6 @@ const blogFields = [
 const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const [blog, setBlog] = useState<Blog | null>(null);
   const { currentBlog, loading } = useSelector((state: RootState) => state.blog);
   // Ensure blog data is loaded when component mounts
   useEffect(() => {
@@ -83,12 +82,8 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
       formik.setFieldError("image", undefined);
     }
   };
-  useEffect(() => {
-    if (currentBlog) {
-      setBlog(currentBlog);
-    }
-  }, [currentBlog]);
-  
+
+
   const handleDelete = () => {
     formik.setFieldValue("image", null);
   };
@@ -302,12 +297,12 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
         <div className="mt-4 grid lg:grid-cols-2 gap-2">
           <p className="font-bold text-[#222222]">Detail Description</p>
           <div className="w-full">
-          <RichTextEditor
-  value={formik.values.detailDescription ?? ""}
-  onChange={(html) => formik.setFieldValue("detailDescription", html)}
-/>
+            <RichTextEditor
+              value={formik.values.detailDescription ?? ""}
+              onChange={(html) => formik.setFieldValue("detailDescription", html)}
+            />
 
-            
+
           </div>
         </div>
 

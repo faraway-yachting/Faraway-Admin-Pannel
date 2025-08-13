@@ -238,9 +238,9 @@ const BlogDetail = () => {
                           onClick={(e) => {
                             const currentStatus = blogItem.status || "draft";
                             if (currentStatus === "published") {
-                              blogItem._id && handleUnpublishClick(e, blogItem._id);
+                              if (blogItem._id) handleUnpublishClick(e, blogItem._id);
                             } else {
-                              blogItem._id && handlePublishClick(e, blogItem._id);
+                              if (blogItem._id) handlePublishClick(e, blogItem._id);
                             }
                           }}
                           disabled={publishingYachtId === blogItem._id}

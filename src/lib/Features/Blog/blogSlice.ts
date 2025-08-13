@@ -189,13 +189,13 @@ export const getBlogById = createAsyncThunk<
       // Safely extract error message
       if (error && typeof error === 'object') {
         if ('response' in error) {
-          const axiosError = error as any;
+          const axiosError = error as { response?: { data?: { message?: string; error?: { message?: string } } }; message?: string };
           message = axiosError.response?.data?.message ||
                     axiosError.response?.data?.error?.message ||
                     axiosError.message ||
                     "API request failed";
         } else if ('message' in error) {
-          message = (error as any).message;
+          message = (error as { message: string }).message;
         }
       }
       
@@ -224,7 +224,7 @@ export const updateBlog = createAsyncThunk<
           } else if (typeof value === 'string' && value.trim() !== '') {
             formData.append(key, value.trim());
           } else if (typeof value !== 'string') {
-            formData.append(key, value as any);
+            formData.append(key, String(value));
           }
         }
       });
@@ -255,19 +255,19 @@ export const updateBlog = createAsyncThunk<
       }
 
       return response.data;
-    } catch (error) {
+            } catch (error) {
       let message = "Something went wrong";
       
       // Safely extract error message
       if (error && typeof error === 'object') {
         if ('response' in error) {
-          const axiosError = error as any;
+          const axiosError = error as { response?: { data?: { message?: string; error?: { message?: string } } }; message?: string };
           message = axiosError.response?.data?.message ||
                     axiosError.response?.data?.error?.message ||
                     axiosError.message ||
                     "API request failed";
         } else if ('message' in error) {
-          message = (error as any).message;
+          message = (error as { message: string }).message;
         }
       }
       
