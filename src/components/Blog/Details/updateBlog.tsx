@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { updateBlog, getBlogById, Blog } from "@/lib/Features/Blog/blogSlice";
+import { updateBlog, getBlogById } from "@/lib/Features/Blog/blogSlice";
 import type { AppDispatch, RootState } from '@/lib/Store/store';
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
@@ -12,7 +12,7 @@ import { MdDeleteOutline } from "react-icons/md";
 import { MdKeyboardArrowLeft } from "react-icons/md";
 import RichTextEditor from "@/common/TextEditor";
 import Tick from "@/icons/Tick";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface CustomerProps {
   goToPrevTab: () => void;

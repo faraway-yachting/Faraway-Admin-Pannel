@@ -6,16 +6,24 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Utility function to handle API errors
-export function handleApiError(error: any): string {
+export function handleApiError(error: unknown): string {
   if (error && typeof error === 'object') {
     if ('response' in error) {
-      const axiosError = error as any;
+      const axiosError = error as { 
+        response?: { 
+          data?: { 
+            message?: string; 
+            error?: { message?: string } 
+          } 
+        }; 
+        message?: string 
+      };
       return axiosError.response?.data?.message ||
              axiosError.response?.data?.error?.message ||
              axiosError.message ||
              "API request failed";
     } else if ('message' in error) {
-      return (error as any).message;
+      return (error as { message: string }).message;
     }
   }
   return "Something went wrong";

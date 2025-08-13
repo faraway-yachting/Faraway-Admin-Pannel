@@ -6,9 +6,7 @@ const nextConfig: NextConfig = {
     unoptimized: false,
     formats: ['image/webp', 'image/avif'],
   },
-  experimental: {
-    optimizeCss: true,
-  },
+  // Removed experimental.optimizeCss as it causes build issues
 };
 
 export default nextConfig;
