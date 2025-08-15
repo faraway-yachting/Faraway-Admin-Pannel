@@ -25,7 +25,7 @@ export const yachtsvalidationSchema = Yup.object().shape({
   "About this Boat": Yup.string(),
   "Specifications": Yup.string(),
   "Boat Layout": Yup.string(),
-  "Video Link": Yup.string(),
+  "Video Link": Yup.string().nullable().transform((value) => value === "" ? undefined : value),
   // "Video Link 2": Yup.string(),
   // "Video Link 3": Yup.string(),
   "Badge": Yup.string(),
@@ -43,8 +43,8 @@ export const yachtsvalidationSchema = Yup.object().shape({
     .test("is-file", "Please select a valid file", (value) => {
       return value instanceof File;
     })
-    .test("file-size", "File must be 3MB or smaller", (value) => {
-      return value instanceof File && value.size <= 3 * 1024 * 1024;
+    .test("file-size", "File must be 10MB or smaller", (value) => {
+      return value instanceof File && value.size <= 10 * 1024 * 1024
     })
     .test("file-type", "Only JPEG, PNG images are allowed", (value) => {
       if (!(value instanceof File)) return false;
@@ -60,9 +60,9 @@ export const yachtsvalidationSchema = Yup.object().shape({
     .test("max-files", "Maximum 30 images allowed", (value) => {
       return value === null || (Array.isArray(value) && value.length <= 30);
     })
-    .test("file-size", "Each file must be 1MB or smaller", (value) => {
+    .test("file-size", "Each file must be 10MB or smaller", (value) => {
       return value === null ||
-        (Array.isArray(value) && value.every(file => file.size <= 1 * 1024 * 1024));
+        (Array.isArray(value) && value.every(file => file.size <= 10 * 1024 * 1024));
     })
     .test("file-type", "Only JPEG, PNG images are allowed", (value) => {
       const allowedTypes = ["image/jpeg", "image/png"];
@@ -97,7 +97,7 @@ export const yachtsUpdateValidationSchema = Yup.object().shape({
   "About this Boat": Yup.string(),
   "Specifications": Yup.string(),
   "Boat Layout": Yup.string(),
-  "Video Link": Yup.string(),
+  "Video Link": Yup.string().nullable().transform((value) => value === "" ? undefined : value),
   // "Video Link 2": Yup.string(),
   // "Video Link 3": Yup.string(),
   "Badge": Yup.string(),
@@ -115,8 +115,8 @@ export const yachtsUpdateValidationSchema = Yup.object().shape({
     .test("is-valid", "Primary Image must be a file or URL", (value) => {
       return value instanceof File || (typeof value === 'string' && value.length > 0);
     })
-    .test("file-size", "File must be 1MB or smaller", (value) => {
-      return !(value instanceof File) || value.size <= 1 * 1024 * 1024;
+    .test("file-size", "File must be 10MB or smaller", (value) => {
+      return !(value instanceof File) || value.size <= 10 * 1024 * 1024;
     })
     .test("file-type", "Only JPEG, PNG images are allowed", (value) => {
       if (!(value instanceof File)) return true;
@@ -130,11 +130,11 @@ export const yachtsUpdateValidationSchema = Yup.object().shape({
     .test("max-files", "Maximum 30 images allowed", (value) => {
       return value === null || (Array.isArray(value) && value.length <= 30);
     })
-    .test("file-size", "Each file must be 1MB or smaller", (value) => {
+    .test("file-size", "Each file must be 10MB or smaller", (value) => {
       if (!Array.isArray(value)) return true;
       return value.every(item => {
         if (item.type === 'file') {
-          return (item.value as File).size <= 1 * 1024 * 1024;
+          return (item.value as File).size <= 10 * 1024 * 1024;
         }
         return true;
       });

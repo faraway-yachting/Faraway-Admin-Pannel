@@ -266,7 +266,7 @@ const YachtsDetail = () => {
                       ))}
                     </div>
                     <div className="flex gap-2 mt-[28px] items-center">
-                      {yachtItem.galleryImages.slice(0, 6).map((sk, index) => (
+                      {yachtItem.galleryImages.slice(0, 4).map((sk, index) => (
                         <div key={index} className="flex items-center relative">
                           <Image
                             src={sk}
@@ -277,13 +277,13 @@ const YachtsDetail = () => {
                           />
                         </div>
                       ))}
-                      {yachtItem.galleryImages.length > 6 && (
+                      {yachtItem.galleryImages.length > 4 && (
                         <div
                           className="relative cursor-pointer"
                           onClick={() => console.log("See All clicked")}
                         >
                           <Image
-                            src={yachtItem.galleryImages[6]}
+                            src={yachtItem.galleryImages[4]}
                             alt="Yacht image see all"
                             width={63}
                             height={52}

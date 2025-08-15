@@ -231,7 +231,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
                             aboutThisBoat: values["About this Boat"] || yachts?.aboutThisBoat || "",
                             specifications: values["Specifications"] || yachts?.specifications || "",
                             boatLayout: values["Boat Layout"] || yachts?.boatLayout || "",
-                            videoLink: values["Video Link"] ?? "",
+                            videoLink: values["Video Link"] || undefined,
                             badge: values["Badge"] ?? "",
                             slug: values["Slug"] ?? "",
                             design: values["Design"] ?? "",

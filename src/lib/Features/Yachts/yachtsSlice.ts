@@ -25,7 +25,7 @@ export interface AddYachtsPayload {
   aboutThisBoat?: string;
   specifications?: string;
   boatLayout?: string;
-  videoLink: string;
+  videoLink?: string;
   videoLink2?: string;
   videoLink3?: string;
   badge?: string;
@@ -72,7 +72,7 @@ export interface YachtsApiResponse {
   aboutThisBoat?: string;
   specifications?: string;
   boatLayout?: string;
-  videoLink: string;
+  videoLink?: string;
   videoLink2?: string;
   videoLink3?: string;
   badge?: string;

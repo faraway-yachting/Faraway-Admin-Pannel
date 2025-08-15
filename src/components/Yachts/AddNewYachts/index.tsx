@@ -211,7 +211,7 @@ const AddNewYachts: React.FC = () => {
             aboutThisBoat: values["About this Boat"] ?? "",
             specifications: values["Specifications"] ?? "",
             boatLayout: values["Boat Layout"] ?? "",
-            videoLink: values["Video Link"] ?? "",
+            videoLink: values["Video Link"] || undefined,
             // videoLink2: values["Video Link 2"] ?? "",
             // videoLink3: values["Video Link 3"] ?? "",
             badge: values["Badge"] ?? "",
