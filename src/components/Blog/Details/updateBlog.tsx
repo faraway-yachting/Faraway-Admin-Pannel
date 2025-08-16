@@ -12,7 +12,7 @@ import { MdDeleteOutline } from "react-icons/md";
 import { MdKeyboardArrowLeft } from "react-icons/md";
 import RichTextEditor from "@/common/TextEditor";
 import Tick from "@/icons/Tick";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface CustomerProps {
   goToPrevTab: () => void;
@@ -61,6 +61,7 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const { currentBlog, loading } = useSelector((state: RootState) => state.blog);
+  const hasInitialized = useRef(false);
   // Ensure blog data is loaded when component mounts
   useEffect(() => {
     if (id) {
@@ -160,12 +161,37 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
     },
   });
 
+
+
+  // Initialize form values when currentBlog first loads
+  useEffect(() => {
+    if (currentBlog && !hasInitialized.current) {
+      console.log('=== INITIALIZING FORM ===');
+      console.log('Setting initial values from blog data...');
+      
+      // Use formik.resetForm to properly initialize all values
+      formik.resetForm({
+        values: {
+          title: currentBlog.title || "",
+          slug: currentBlog.slug || "",
+          shortDescription: currentBlog.shortDescription || "",
+          detailDescription: currentBlog.detailDescription || "",
+          image: currentBlog.image || null,
+        }
+      });
+      
+      hasInitialized.current = true;
+      console.log('Form initialized successfully');
+      console.log('========================');
+    }
+  }, [currentBlog, formik]);
+
   const getFieldError = (fieldName: keyof FormBlogUpdateValues) => {
     return formik.touched[fieldName] && formik.errors[fieldName];
   };
 
   // Show loading state if blog data is not available
-  if (loading) {
+  if (loading || !currentBlog) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-lg">Loading blog data...</div>
@@ -176,11 +202,11 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
   return (
     <>
       <form onSubmit={formik.handleSubmit} className="mt-4">
-        <div>
-          <h2 className="font-bold mb-2 text-[#001B48] text-[24px] pb-2 border-b border-[#CCCCCC]">
+        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+          <h2 className="font-bold mb-6 text-[#001B48] text-[24px] pb-3 border-b border-[#CCCCCC]">
             Blog Information
           </h2>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {blogFields.map((field, index) => {
               const isFileUpload = field.type === "file";
               const fieldName = field.name as keyof FormBlogUpdateValues;
@@ -190,7 +216,7 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
                 <div
                   key={index}
                   className={`${isFileUpload
-                    ? "col-span-1"
+                    ? "col-span-1 md:col-span-2 lg:col-span-2"
                     : "col-span-1"
                     }`}
                 >
@@ -293,20 +319,26 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
           </div>
         </div>
 
-        {/* Rich Text Editor for Detail Description */}
-        <div className="mt-4 grid lg:grid-cols-2 gap-2">
-          <p className="font-bold text-[#222222]">Detail Description</p>
+                         {/* Rich Text Editor for Detail Description */}
+        <div className="mt-6 bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-1 mb-4">
+            <label className="block font-bold text-[#222222] text-lg">
+              Detail Description
+            </label>
+            <span className="text-gray-500 text-sm">(Optional)</span>
+          </div>
           <div className="w-full">
             <RichTextEditor
-              value={formik.values.detailDescription ?? ""}
-              onChange={(html) => formik.setFieldValue("detailDescription", html)}
+              key={currentBlog?._id || 'loading'}
+              value={formik.values.detailDescription || ""}
+              onChange={(html) => {
+                formik.setFieldValue("detailDescription", html);
+              }}
             />
-
-
           </div>
         </div>
-
-        <div className="mt-3 flex justify-between">
+      
+        <div className="mt-8 flex justify-between items-center">
           <button
             onClick={goToPrevTab}
             className="rounded-full px-[16px] py-[7px] border border-[#666666] text-[#222222] flex items-center gap-1 justify-center cursor-pointer font-medium"
