@@ -247,7 +247,7 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
                                   }
                                   return "No file selected";
                                 })()}
-                              </p>
+                              </p>       
                               <MdDeleteOutline
                                 className="cursor-pointer text-red-500"
                                 onClick={handleDelete}

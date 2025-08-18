@@ -34,7 +34,7 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
                 { label: "Title", data: currentBlog?.title || "N/A" },
                 { label: "Slug", data: currentBlog?.slug || "N/A" },
                 { label: "Status", data: currentBlog?.status || "N/A" },
-            ],
+            ],             
             iconone: MdKeyboardArrowLeft,
             btn: "Back",
             icon: MdEdit,

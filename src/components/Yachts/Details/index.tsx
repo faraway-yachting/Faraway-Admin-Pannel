@@ -35,7 +35,7 @@ const YachtsDetail: React.FC<VendorsProps> = ({ id }) => {
         <div>
             {loading && !showGeneralInfo ? (
                 <div className="flex items-center justify-center h-[calc(100vh-112px)]">
-                    <div className="w-10 h-10 border-3 border-t-transparent border-[#2185D0] rounded-full animate-spin" />
+                    <div className="w-10 h-10 border-3 border-t-transparent border-[#001B48] rounded-full animate-spin" />
                 </div>
             ) : (
                 <>
