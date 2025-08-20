@@ -4,13 +4,13 @@ export const addBlogValidationSchema = Yup.object().shape({
   title: Yup.string()
     .required("Title is required")
     .min(3, "Title must be at least 3 characters")
-    .max(200, "Title must not exceed 200 characters"),
+    .max(300, "Title must not exceed 200 characters"),
 
   slug: Yup.string()
     .required("Slug is required")
     .matches(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens")
     .min(3, "Slug must be at least 3 characters")
-    .max(50, "Slug must not exceed 50 characters"),
+    .max(100, "Slug must not exceed 50 characters"),
 
   shortDescription: Yup.string()
     .required("Description is required")
@@ -37,13 +37,13 @@ export const updateBlogValidationSchema = Yup.object().shape({
   title: Yup.string()
     .required("Title is required")
     .min(3, "Title must be at least 3 characters")
-    .max(50, "Title must not exceed 50 characters"),
+    .max(300, "Title must not exceed 50 characters"),
 
   slug: Yup.string()
     .required("Slug is required")
     .matches(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens")
     .min(3, "Slug must be at least 3 characters")
-    .max(50, "Slug must not exceed 50 characters"),
+    .max(100, "Slug must not exceed 50 characters"),
 
   shortDescription: Yup.string()
     .required("Description is required")
