@@ -5,14 +5,14 @@ import { MdKeyboardArrowLeft } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "@/lib/Store/store";
 import { useFormik } from "formik";
-import { addBlog } from "@/lib/Features/Blog/blogSlice";
+import { addBlog, AddBlogPayload } from "@/lib/Features/Blog/blogSlice";
 import { addBlogValidationSchema } from "@/lib/Validation/blogValidationSchema";
 import RichTextEditor from "@/common/TextEditor";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
 type FormValues = {
-  image: File | null;
+  image: File | undefined;
   slug: string;
   title: string;
   shortDescription: string;
@@ -58,7 +58,7 @@ const BlogDetail = () => {
 
   const formik = useFormik<FormValues>({
     initialValues: {
-      image: null,
+      image: undefined,
       slug: "",
       title: "",
       shortDescription: "",
@@ -82,7 +82,7 @@ const BlogDetail = () => {
         }
 
         // Prepare blog data with required values
-        const blogData: any = {
+        const blogData: AddBlogPayload = {
           title: values.title.trim(),
           slug: values.slug.trim(),
           status: "draft",
@@ -131,6 +131,8 @@ const BlogDetail = () => {
               const file = e.target.files?.[0];
               if (file) {
                 formik.setFieldValue(fieldName, file);
+              } else {
+                formik.setFieldValue(fieldName, undefined);
               }
             }}
             onBlur={formik.handleBlur}
