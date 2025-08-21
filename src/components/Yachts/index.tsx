@@ -122,6 +122,8 @@ const YachtsDetail = () => {
         if (publishYacht.fulfilled.match(resultAction)) {
           const actionText = newStatus === "published" ? "published" : "archived";
           toast.success(`Yacht ${actionText} successfully`);
+          // Refresh the yacht list to show updated status
+          dispatch(getYachts({ page: currentPages, limit: itemsPerPage }));
         } else if (publishYacht.rejected.match(resultAction)) {
           const errorPayload = resultAction.payload as {
             error: { message: string };
@@ -151,6 +153,8 @@ const YachtsDetail = () => {
         const resultAction = await dispatch(publishYacht({ yachtId: yachtToUnpublish, status: "draft" }));
         if (publishYacht.fulfilled.match(resultAction)) {
           toast.success("Yacht unpublished successfully");
+          // Refresh the yacht list to show updated status
+          dispatch(getYachts({ page: currentPages, limit: itemsPerPage }));
         } else if (publishYacht.rejected.match(resultAction)) {
           const errorPayload = resultAction.payload as {
             error: { message: string };

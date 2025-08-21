@@ -23,7 +23,7 @@ type FormBlogUpdateValues = {
   slug: string;
   shortDescription: string;
   detailDescription: string;
-  image: File | string | null;
+  image: File | string;
 };
 
 const blogFields = [
@@ -54,7 +54,7 @@ const blogFields = [
     type: "text",
     required: true,
     placeholder: "Enter short description"
-  },
+  }
 ];
 
 const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
@@ -86,7 +86,7 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
 
 
   const handleDelete = () => {
-    formik.setFieldValue("image", null);
+    formik.setFieldValue("image", "");
   };
 
   const formik = useFormik<FormBlogUpdateValues>({
@@ -96,13 +96,15 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
       slug: currentBlog?.slug || "",
       shortDescription: currentBlog?.shortDescription || "",
       detailDescription: currentBlog?.detailDescription || "",
-      image: currentBlog?.image || null,
+      image: currentBlog?.image || "",
     },
     validationSchema: updateBlogValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
+        // Validate all required fields
         const errors = await formik.validateForm();
         if (Object.keys(errors).length > 0) {
+          // Set all fields as touched to show validation errors
           formik.setTouched({
             title: true,
             slug: true,
@@ -113,25 +115,29 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
           setSubmitting(false);
           return;
         }
-        // Prepare the data object, only including fields that have values
-        const updateData: {
-          title?: string;
-          slug?: string;
-          shortDescription?: string;
-          detailDescription?: string;
-          status?: "draft" | "published";
-          image?: File | string;
-        } = {};
-        if (values.title) updateData.title = values.title;
-        if (values.slug) updateData.slug = values.slug;
-        if (values.shortDescription) updateData.shortDescription = values.shortDescription;
-        if (values.detailDescription) updateData.detailDescription = values.detailDescription;
-        // Include status field (required by API)
-        updateData.status = currentBlog?.status || "draft";
-        // Only include image if it's a new File, not a string URL
-        if (values.image instanceof File) {
-          updateData.image = values.image;
+        
+        // Ensure image is provided
+        if (!values.image && !currentBlog?.image) {
+          toast.error("Image is required");
+          return;
         }
+        
+        // Prepare the data object with required values
+        const updateData: {
+          title: string;
+          slug: string;
+          shortDescription: string;
+          detailDescription: string;
+          status: "draft" | "published";
+          image: File | string;
+        } = {
+          title: values.title,
+          slug: values.slug,
+          shortDescription: values.shortDescription,
+          detailDescription: values.detailDescription,
+          status: currentBlog?.status || "draft",
+          image: values.image || currentBlog?.image || "",
+        };
 
         const resultAction = await dispatch(
           updateBlog({
@@ -176,7 +182,7 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
           slug: currentBlog.slug || "",
           shortDescription: currentBlog.shortDescription || "",
           detailDescription: currentBlog.detailDescription || "",
-          image: currentBlog.image || null,
+          image: currentBlog.image || "",
         }
       });
       
@@ -198,14 +204,14 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
       </div>
     );
   }
-
   return (
     <>
       <form onSubmit={formik.handleSubmit} className="mt-4">
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-          <h2 className="font-bold mb-6 text-[#001B48] text-[24px] pb-3 border-b border-[#CCCCCC]">
+        {/* Blog Information Section */}
+        <div className="bg-white shadow-xs rounded-lg px-2 py-2 w-full mb-6">
+          <p className="text-[#001B48] font-bold text-[18px] mb-2 pb-2 border-b border-[#CCCCCC]">
             Blog Information
-          </h2>
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {blogFields.map((field, index) => {
               const isFileUpload = field.type === "file";
@@ -216,17 +222,15 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
                 <div
                   key={index}
                   className={`${isFileUpload
-                    ? "col-span-1 md:col-span-2 lg:col-span-2"
+                    ? "col-span-1 md:col-span-1 lg:col-span-1"
                     : "col-span-1"
                     }`}
                 >
                   <div className="flex items-center gap-1 mb-2">
                     <label className="block font-bold text-[#222222]">
                       {field.label}
+                      {field.required && <span className="text-red-500 ml-1">*</span>}
                     </label>
-                    {field.required && (
-                      <span className="text-red-500">*</span>
-                    )}
                   </div>
 
                   {isFileUpload ? (
@@ -235,7 +239,7 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
                         className={`text-[#222222] w-full bg-[#F0F2F4] rounded-lg px-3 py-2  ${fieldError ? "border border-[#DB2828]" : ""
                           }`}
                       >
-                        {!formik.values.image ? (
+                        {!formik.values.image || formik.values.image === "" ? (
                           <input
                             type="file"
                             name="image"
@@ -319,14 +323,11 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
           </div>
         </div>
 
-                         {/* Rich Text Editor for Detail Description */}
-        <div className="mt-6 bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-1 mb-4">
-            <label className="block font-bold text-[#222222] text-lg">
-              Detail Description
-            </label>
-            <span className="text-gray-500 text-sm">(Optional)</span>
-          </div>
+        {/* Rich Text Editor for Detail Description */}
+        <div className="bg-white shadow-xs rounded-lg px-2 py-2 w-full mb-6">
+          <p className="text-[#001B48] font-bold text-[18px] mb-2 pb-2 border-b border-[#CCCCCC]">
+            Detail Description
+          </p>
           <div className="w-full">
             <RichTextEditor
               key={currentBlog?._id || 'loading'}
@@ -338,7 +339,8 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
           </div>
         </div>
       
-        <div className="mt-8 flex justify-between items-center">
+        {/* Action Buttons */}
+        <div className="mt-3 flex justify-between">
           <button
             onClick={goToPrevTab}
             className="rounded-full px-[16px] py-[7px] border border-[#666666] text-[#222222] flex items-center gap-1 justify-center cursor-pointer font-medium"
@@ -349,7 +351,7 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
           <button
             type="submit"
             disabled={loading}
-            className={`rounded-full px-[16px] py-[8px] bg-[#001B48] hover:bg-[#222222] text-white flex items-center justify-center gap-2 font-medium ${loading ? "cursor-not-allowed" : "cursor-pointer"
+            className={`rounded-full px-[16px] py-[7px] bg-[#012A50] hover:bg-[#5F5C63] text-white text-center cursor-pointer font-medium flex items-center gap-2 ${loading ? "cursor-not-allowed" : "cursor-pointer"
               }`}
           >
             {loading ? "Save ..." : <><Tick /> Save</>}

@@ -27,7 +27,7 @@ export interface AddBlogPayload {
   status: string;
   shortDescription: string;
   detailDescription: string;
-  image: File;
+  image?: File;
 }
 
 export interface UpdateBlogPayload {
@@ -95,7 +95,9 @@ export const addBlog = createAsyncThunk<
       formData.append("status", credentials.status);
       formData.append("shortDescription", credentials.shortDescription);
       formData.append("detailDescription", credentials.detailDescription);
-      formData.append("image", credentials.image);
+      if (credentials.image) {
+        formData.append("image", credentials.image);
+      }
 
       const response = await axios.post(
         "https://awais.thedevapp.online/blog/add-blog",

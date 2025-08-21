@@ -66,47 +66,36 @@ const BlogDetail = () => {
     },
     validationSchema: addBlogValidationSchema,
     onSubmit: async (values) => {
-      if (!values.image) {
-        toast.error("Primary image is required");
-        return;
-      }
-
-      if (!values.detailDescription || values.detailDescription.trim().length < 50) {
-        toast.error("Blog content must be at least 50 characters");
-        return;
-      }
-
       try {
-        // Validate required fields
-        if (!values.title || values.title.trim().length < 3) {
-          toast.error("Title must be at least 3 characters");
-          return;
-        }
-        
-        if (!values.slug || values.slug.trim().length < 3) {
-          toast.error("Slug must be at least 3 characters");
-          return;
-        }
-        
-        // Validate slug format
-        if (!/^[a-z0-9-]+$/.test(values.slug)) {
-          toast.error("Slug can only contain lowercase letters, numbers, and hyphens");
-          return;
-        }
-        
-        if (!values.shortDescription || values.shortDescription.trim().length < 10) {
-          toast.error("Short description must be at least 10 characters");
+        // Check if there are any validation errors
+        const errors = await formik.validateForm();
+        if (Object.keys(errors).length > 0) {
+          // Set all fields as touched to show validation errors
+          formik.setTouched({
+            image: true,
+            slug: true,
+            title: true,
+            shortDescription: true,
+            detailDescription: true,
+          });
           return;
         }
 
-        const blogData = {
+        // Prepare blog data with required values
+        const blogData: any = {
           title: values.title.trim(),
-          slug: values.slug.trim().toLowerCase(),
-          status: "draft", // Add default status
+          slug: values.slug.trim(),
+          status: "draft",
           shortDescription: values.shortDescription.trim(),
-          image: values.image,
           detailDescription: values.detailDescription.trim(),
+          image: values.image,
         };
+        
+        // Ensure image is provided
+        if (!values.image) {
+          toast.error("Image is required");
+          return;
+        }
         
         console.log("Submitting blog data:", blogData);
 
@@ -172,17 +161,21 @@ const BlogDetail = () => {
 
   return (
     <>
-      <div className="mt-4 flex justify-between flex-col">
+      <div className="mt-4">
         <form onSubmit={formik.handleSubmit}>
-          <div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          {/* Blog Information Section */}
+          <div className="bg-white shadow-xs rounded-lg px-2 py-2 w-full mb-6">
+            <p className="text-[#001B48] font-bold text-[18px] mb-2 pb-2 border-b border-[#CCCCCC]">
+              Blog Information
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {blogFields.map((field, index) => {
                 const fieldName = field.name as keyof FormValues;
                 const fieldError = formik.touched[fieldName] && formik.errors[fieldName];
                 
                 return (
                   <div key={index} className="flex flex-col">
-                    <label className="block text-sm font-medium text-[#222222] mb-2">
+                    <label className="block font-bold text-[#222222] mb-2">
                       {field.label}
                       {field.required && <span className="text-red-500 ml-1">*</span>}
                     </label>
@@ -199,8 +192,13 @@ const BlogDetail = () => {
                 );
               })}
             </div>
-            
-            <p className="font-bold text-[#222222] ms-2 mb-3">Blog Content</p>
+          </div>
+          
+          {/* Blog Content Section */}
+          <div className="bg-white shadow-xs rounded-lg px-2 py-2 w-full mb-6">
+            <p className="text-[#001B48] font-bold text-[18px] mb-2 pb-2 border-b border-[#CCCCCC]">
+              Blog Content
+            </p>
             <div className="w-full">
               <RichTextEditor
                 value={formik.values.detailDescription}
@@ -211,13 +209,14 @@ const BlogDetail = () => {
               />
             </div>
             {formik.touched.detailDescription && formik.errors.detailDescription && (
-              <p className="text-[#DB2828] text-sm mt-1 ms-2">
+              <p className="text-[#DB2828] text-sm mt-1">
                 {formik.errors.detailDescription}
               </p>
             )}
           </div>
           
-          <div className="mt-6 flex items-center justify-between">
+          {/* Action Buttons */}
+          <div className="mt-3 flex justify-between">
             <button 
               type="button" 
               onClick={() => router.push("/blog")} 
@@ -229,7 +228,7 @@ const BlogDetail = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`rounded-full px-[16px] py-[8px] bg-[#001B48] hover:bg-[#222222] text-white flex items-center justify-center gap-2 font-medium ${
+              className={`rounded-full px-[16px] py-[7px] bg-[#012A50] hover:bg-[#5F5C63] text-white text-center cursor-pointer font-medium flex items-center gap-2 ${
                 loading ? "cursor-not-allowed" : "cursor-pointer"
               }`}
             >

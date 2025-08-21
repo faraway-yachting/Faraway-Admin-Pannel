@@ -2,27 +2,22 @@ import * as Yup from "yup";
 
 export const addBlogValidationSchema = Yup.object().shape({
   title: Yup.string()
-    .required("Title is required")
-    .min(3, "Title must be at least 3 characters")
-    .max(300, "Title must not exceed 200 characters"),
+    .min(1, "Title must be at least 1 character")
+    .max(300, "Title must not exceed 300 characters"),
 
   slug: Yup.string()
-    .required("Slug is required")
-    .matches(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens")
-    .min(3, "Slug must be at least 3 characters")
-    .max(100, "Slug must not exceed 50 characters"),
+    .min(1, "Slug must be at least 1 character")
+    .max(100, "Slug must not exceed 100 characters"),
 
   shortDescription: Yup.string()
-    .required("Description is required")
-    .min(10, "Description must be at least 10 characters")
+    .min(1, "Description must be at least 1 character")
     .max(600, "Description must not exceed 600 characters"),
 
   detailDescription: Yup.string()
-    .required("Content is required")
-    .min(50, "Content must be at least 1000 characters"),
+    .min(1, "Content must be at least 1 character"),
 
   image: Yup.mixed()
-    .required("Primary image is required")
+    .nullable()
     .test("fileSize", "File size is too large", (value) => {
       if (!value || !(value instanceof File)) return true;
       return value.size <= 5 * 1024 * 1024; // 5MB limit
@@ -35,24 +30,19 @@ export const addBlogValidationSchema = Yup.object().shape({
 
 export const updateBlogValidationSchema = Yup.object().shape({
   title: Yup.string()
-    .required("Title is required")
-    .min(3, "Title must be at least 3 characters")
-    .max(300, "Title must not exceed 50 characters"),
+    .min(1, "Title must be at least 1 character")
+    .max(300, "Title must not exceed 300 characters"),
 
   slug: Yup.string()
-    .required("Slug is required")
-    .matches(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens")
-    .min(3, "Slug must be at least 3 characters")
-    .max(100, "Slug must not exceed 50 characters"),
+    .min(1, "Slug must be at least 1 character")
+    .max(100, "Slug must not exceed 100 characters"),
 
   shortDescription: Yup.string()
-    .required("Description is required")
-    .min(10, "Description must be at least 10 characters")
+    .min(1, "Description must be at least 1 character")
     .max(600, "Description must not exceed 600 characters"),
 
   detailDescription: Yup.string()
-    .required("Content is required")
-    .min(50, "Content must be at least 50 characters"),
+    .min(1, "Content must be at least 1 character"),
 
   image: Yup.mixed<File | string>()
     .nullable()
