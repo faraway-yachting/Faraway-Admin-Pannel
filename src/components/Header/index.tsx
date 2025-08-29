@@ -11,14 +11,19 @@ import { IoIosLogOut } from "react-icons/io";
 import Drawer from "../Drawer";
 import { AdminMenus } from "@/data/Sidebar/menu";
 import { RiBloggerLine } from "react-icons/ri";
+import { IoIosPricetags } from "react-icons/io";
+
 
 
 const screenMap: Record<string, { name: string; Icon: React.FC }> = {
   "/dashboard": { name: "Dashboard", Icon: Grid },
+  "/tags": { name: "Tags", Icon: IoIosPricetags },
+  "/tags/addnewtags": { name: "Tags", Icon: IoIosPricetags },
   "/yachts": { name: "Yachts", Icon: FaSailboat },
   "/yachts/addnewyachts": { name: "Yachts", Icon: FaSailboat },
   "/yachts/id": { name: "Yachts", Icon: FaSailboat },
     "/blog": { name: "Blog", Icon: RiBloggerLine },
+    "/blog/id": { name: "Blog", Icon: RiBloggerLine },
   "/blog/addnewblog": { name: "Blog", Icon: RiBloggerLine },
   "/settings": { name: "Settings", Icon: Settings },
 };
@@ -53,6 +58,9 @@ const Header: React.FC = () => {
   let screenKey = pathname;
   if (/^\/yachts\/[^/]+$/.test(pathname) && pathname !== "/yachts" && pathname !== "/yachts/addnewyachts") {
     screenKey = "/yachts/id";
+  }
+  if (/^\/blog\/[^/]+$/.test(pathname) && pathname !== "/blog" && pathname !== "/blog/addnewblog") {
+    screenKey = "/blog/id";
   }
 
   const screen = screenMap[screenKey];
@@ -95,10 +103,10 @@ const Header: React.FC = () => {
           </div>
           <div className="relative" ref={dropdownRef}>
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
-              <Image src="/images/avatar.jpg" alt="bell" width={43} height={43} />
+              <Image src="/images/logoo.png" alt="bell" width={43} height={43} className="w-[43px] h-[43px]" />
               <div className="flex flex-col gap-1">
-                <h1 className="text-[#001B48] font-bold">Jackob Troff</h1>
-                <p className="text-[#222222] font-normal text-[14px]">Jackob Troff</p>
+                <h1 className="text-[#001B48] font-bold">FarAway</h1>
+                <p className="text-[#222222] font-normal text-[14px]">Yachting</p>
               </div>
             </div>
             {isOpen && (
