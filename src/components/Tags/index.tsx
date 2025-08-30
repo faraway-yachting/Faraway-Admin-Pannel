@@ -143,7 +143,8 @@ const TagsDetail = () => {
                           <FaEye size={18} />
                         </button>
                         <button
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setYachtsToDelete(tag._id);
                             setIsModalOpen(true);
                           }}
