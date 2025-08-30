@@ -19,8 +19,8 @@ export interface Tags extends TagsApiResponse {
 }
 
 interface GetTagsParams {
-  page: number;
-  limit: number;
+  page?: number;
+  limit?: number;
 }
 
 interface TagsResponse {
@@ -98,22 +98,29 @@ export const addTags = createAsyncThunk<
 // Get All Tags
 export const getTags = createAsyncThunk<
   TagsResponse,
-  GetTagsParams,
+  GetTagsParams | void,
   { rejectValue: { error: { message: string } } }
 >(
   "tags/getTags",
-  async ({ page, limit }, { rejectWithValue }) => {
+  async (params, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `https://awais.thedevapp.online/tags/all-tags?page=${page}&limit=${limit}`,
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      
+      // Build query string based on whether params are provided
+      let queryString = "https://awais.thedevapp.online/tags/all-tags";
+      if (params && (params.page || params.limit)) {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append('page', params.page.toString());
+        if (params.limit) queryParams.append('limit', params.limit.toString());
+        queryString += `?${queryParams.toString()}`;
+      }
+      
+      const response = await axios.get(queryString, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (response?.data.error) {
         throw new Error(
           response?.data?.error?.message || "Something went wrong"

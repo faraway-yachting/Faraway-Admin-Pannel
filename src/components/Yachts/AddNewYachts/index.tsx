@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import {
   NewYachtsData,
   RichTextEditorSections,
@@ -19,6 +20,7 @@ import {
 } from "@/lib/Validation/addyachtsValidationSchema";
 import RichTextEditor from "@/common/TextEditor";
 import Tick from "@/icons/Tick";
+import { getTags } from "@/lib/Features/Tags/tagsSlice";
 
 type RichTextFieldKey =
   // | "Price"
@@ -34,6 +36,13 @@ const AddNewYachts: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const loading = useSelector((state: RootState) => state.yachts.addLoading);
+  const { allTags } = useSelector(
+    (state: RootState) => state.tags
+  );
+
+  useEffect(() => {
+    dispatch(getTags());
+  }, [dispatch]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -131,6 +140,7 @@ const AddNewYachts: React.FC = () => {
       "Length Overall": "",
       "Fuel Capacity": "",
       "Water Capacity": "",
+      "Tags": "",
       Code: "",
       "Yacht Type": "",
     },
@@ -192,6 +202,7 @@ const AddNewYachts: React.FC = () => {
             lengthRange: values["Length Range"] ?? "",
             title: values["Title"] ?? "",
             cabins: values["Cabins"],
+            tag: values["Tags"] ?? "",
             bathrooms: values["Bathrooms"],
             passengerDayTrip: values["Passenger Day Trip"],
             passengerOvernight: values["Passenger Overnight"],
@@ -279,6 +290,7 @@ const AddNewYachts: React.FC = () => {
                   const isPrimaryUpload = field.label === "Primary Image";
                   const isFileUpload = field.label === "Gallery Images";
                   const isCheckbox = field.type === "checkbox";
+                  const isTag = field.label === "Tags";
                   const fieldName = field.label as keyof FormYachtsValues;
                   const fieldError = getFieldError(fieldName);
                   if (isCheckbox) {
@@ -349,7 +361,51 @@ const AddNewYachts: React.FC = () => {
                           <span className="text-red-500">*</span>
                         )}
                       </div>
-                      {isDropdown ? (
+                      {isTag ? (
+                        <>
+                          <div
+                            className={`bg-[#F0F2F4] rounded-lg px-3 py-2 w-full ${fieldError ? "border border-[#DB2828]" : ""
+                              }`}
+                          >
+                            <select
+                              name={fieldName}
+                              value={formik.values[fieldName] as string}
+                              onChange={(e) => {
+                                formik.handleChange(e);
+                                formik.setFieldTouched(fieldName, true, false);
+                              }}
+                              onBlur={formik.handleBlur}
+                              className={`w-full outline-0 cursor-pointer ${value ? "text-[#222222]" : "text-[#999999]"
+                                }`}
+                            >
+                              <option value="" disabled hidden>
+                                {field.placeholder}
+                              </option>
+                              {allTags && allTags.length > 0 ? (
+                                allTags.map((tag) => (
+                                  <option
+                                    key={tag._id}
+                                    value={tag.Name}
+                                    className="text-[#222222] outline-0 pt-4"
+                                  >
+                                    {tag.Name}
+                                  </option>
+                                ))
+                              ) : (
+                                <option value="" disabled className="text-[#999999]">
+                                  No Tags Available
+                                </option>
+                              )}
+                            </select>
+                          </div>
+                          {fieldError && (
+                            <p className="text-[#DB2828] text-sm mt-1">
+                              {typeof formik.errors[fieldName] === "string" &&
+                                formik.errors[fieldName]}
+                            </p>
+                          )}
+                        </>  
+                      ) : isDropdown ? (
                         <>
                           <div
                             className={`bg-[#F0F2F4] rounded-lg px-3 py-2 w-full ${fieldError ? "border border-[#DB2828]" : ""
