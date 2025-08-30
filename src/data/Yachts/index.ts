@@ -94,6 +94,7 @@ export const NewYachtsData: NewYachtsFormSection[] = [
       },
       { label: "Badge", placeholder: "" },
       { label: "Slug", placeholder: "" },
+      { label: "Tags", placeholder: "", type:"dropdown" },
     ],
   },
   {

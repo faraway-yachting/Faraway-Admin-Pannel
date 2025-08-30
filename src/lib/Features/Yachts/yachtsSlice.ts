@@ -11,6 +11,7 @@ export interface AddYachtsPayload {
   bathrooms: string;
   passengerDayTrip: string;
   passengerOvernight: string;
+  tag: string;
   guests: string;
   guestsRange: string;
   dayTripPrice: string;
@@ -78,6 +79,7 @@ export interface YachtsApiResponse {
   badge?: string;
   slug: string;
   design: string;
+  tag: string;
   built: string;
   cruisingSpeed: string;
   lengthOverall: string;
