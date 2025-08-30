@@ -19,6 +19,7 @@ const screenMap: Record<string, { name: string; Icon: React.FC }> = {
   "/dashboard": { name: "Dashboard", Icon: Grid },
   "/tags": { name: "Tags", Icon: IoIosPricetags },
   "/tags/addnewtags": { name: "Tags", Icon: IoIosPricetags },
+  "/tags/id": { name: "Tags", Icon: IoIosPricetags },
   "/yachts": { name: "Yachts", Icon: FaSailboat },
   "/yachts/addnewyachts": { name: "Yachts", Icon: FaSailboat },
   "/yachts/id": { name: "Yachts", Icon: FaSailboat },
@@ -61,6 +62,9 @@ const Header: React.FC = () => {
   }
   if (/^\/blog\/[^/]+$/.test(pathname) && pathname !== "/blog" && pathname !== "/blog/addnewblog") {
     screenKey = "/blog/id";
+  }
+  if (/^\/tags\/[^/]+$/.test(pathname) && pathname !== "/tags" && pathname !== "/tags/addnewtags") {
+    screenKey = "/tags/id";
   }
 
   const screen = screenMap[screenKey];

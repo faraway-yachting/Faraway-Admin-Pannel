@@ -189,7 +189,7 @@ const YachtsDetail = () => {
 
   return (
     <>
-      <div>
+      <div className={`${currentItems.length > 2 ? "h-auto" : "h-[calc(100vh-115px)]"}`}>
         <BreadCrum onSearch={setSearchTerm} />
         {getLoading ? (
           <div className="flex items-center justify-center h-[calc(100vh-14.1rem)]">

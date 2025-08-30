@@ -9,9 +9,9 @@ export interface AddTagsPayload {
 
 export interface TagsApiResponse {
   _id: string;
-  name: string;
-  slug: string;
-  description: string;
+  Name: string;
+  Slug: string;
+  Description: string;
 }
 
 export interface Tags extends TagsApiResponse {
@@ -69,7 +69,7 @@ export const addTags = createAsyncThunk<
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "https://awais.thedevapp.online/yacht/add-yacht",
+        "https://awais.thedevapp.online/tags/add-tag",
         credentials,
         {
           withCredentials: true,
@@ -106,7 +106,7 @@ export const getTags = createAsyncThunk<
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://awais.thedevapp.online/yacht/all-yachts?page=${page}&limit=${limit}`,
+        `https://awais.thedevapp.online/tags/all-tags?page=${page}&limit=${limit}`,
         {
           withCredentials: true,
           headers: {
@@ -140,7 +140,7 @@ export const getTagsById = createAsyncThunk(
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://awais.thedevapp.online/yacht?id=${tagsId}`,
+        `https://awais.thedevapp.online/tags/tagByID?id=${tagsId}`,
         {
           withCredentials: true,
           headers: {
@@ -169,7 +169,7 @@ export const updateTags = createAsyncThunk(
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        `https://awais.thedevapp.online/yacht/edit-yacht?id=${tagsId}`,
+        `https://awais.thedevapp.online/tags/edit-tag?id=${tagsId}`,
         payload,
         {
           withCredentials: true,
@@ -207,7 +207,7 @@ export const deleteTags = createAsyncThunk<
     try {
       const token = localStorage.getItem("token");
       const response = await axios.delete(
-        `https://awais.thedevapp.online/yacht/delete-yacht?id=${id}`,
+        `https://awais.thedevapp.online/tags/delete-tag?id=${id}`,
         {
           withCredentials: true,
           headers: {

@@ -8,21 +8,30 @@ import type { RootState, AppDispatch } from "@/lib/Store/store";
 import { toast, ToastContainer } from "react-toastify";
 import { useFormik } from "formik";
 import "react-toastify/dist/ReactToastify.css";
-import { addTags } from "@/lib/Features/Tags/tagsSlice";
-import {tagsValidationSchema, FormTagsValues} from "@/lib/Validation/addtagsValidationSchema";
+import { updateTags } from "@/lib/Features/Tags/tagsSlice";
+import {
+  tagsValidationSchema,
+  FormTagsValues,
+} from "@/lib/Validation/addtagsValidationSchema";
 import Tick from "@/icons/Tick";
 
-const AddNewTags: React.FC = () => {
+interface TagsProps {
+  goToPrevTab: () => void;
+  id: string | number;
+}
+
+const UpdateTags: React.FC<TagsProps> = ({ goToPrevTab, id }) => {
 
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const loading = useSelector((state: RootState) => state.tags.addLoading);
+  const { tags, loading } = useSelector((state: RootState) => state.tags);
 
   const formik = useFormik<FormTagsValues>({
+    enableReinitialize: true,
     initialValues: {
-      "Name": "",
-      "Slug": "",
-      Description: ""
+      Name: tags?.Name || "",
+      Slug: tags?.Slug || "",
+      Description: tags?.Description || "",
     },
     validationSchema: tagsValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -30,28 +39,31 @@ const AddNewTags: React.FC = () => {
         const errors = await formik.validateForm();
         if (Object.keys(errors).length > 0) {
           formik.setTouched({
-            "Name": true,
-            "Slug": true,
-            "Description": true,
+            Name: true,
+            Slug: true,
+            Description: true,
           });
           setSubmitting(false);
           return;
         }
         const resultAction = await dispatch(
-          addTags({
-            name: values["Name"] ?? "",
-            slug: values["Slug"] ?? "",
-            description: values["Description"] ?? ""
+          updateTags({
+            payload: {
+              name: values["Name"] ?? "",
+              slug: values["Slug"] ?? "",
+              description: values["Description"] ?? "",
+            },
+            tagsId: id.toString(),
           })
         );
-        if (addTags.fulfilled.match(resultAction)) {
-          toast.success("Tags Register successfully", {
+        if (updateTags.fulfilled.match(resultAction)) {
+          toast.success("Tags Update successfully", {
             onClose: () => {
               router.push("/tags");
             },
           });
           formik.resetForm();
-        } else if (addTags.rejected.match(resultAction)) {
+        } else if (updateTags.rejected.match(resultAction)) {
           const errorPayload = resultAction.payload as {
             error: { message: string };
           };
@@ -72,7 +84,10 @@ const AddNewTags: React.FC = () => {
 
   return (
     <>
-      <form onSubmit={formik.handleSubmit} className="flex flex-col justify-between h-[calc(100vh-106px)]">
+      <form
+        onSubmit={formik.handleSubmit}
+        className="flex flex-col justify-between h-[calc(100vh-214px)]"
+      >
         {NewTagsData.map((section, sectionIndex) => {
           return (
             <div key={sectionIndex}>
@@ -157,7 +172,7 @@ const AddNewTags: React.FC = () => {
         <div className="flex items-center justify-between">
           <button
             type="button"
-            onClick={() => router.push("/tags")}
+            onClick={goToPrevTab}
             className="rounded-full px-[16px] py-[7px] border border-[#666666] text-[#222222] flex items-center gap-1 justify-center cursor-pointer font-medium"
           >
             <MdKeyboardArrowLeft />
@@ -185,4 +200,4 @@ const AddNewTags: React.FC = () => {
   );
 };
 
-export default AddNewTags;
+export default UpdateTags;

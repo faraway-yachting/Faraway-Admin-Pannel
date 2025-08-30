@@ -5,17 +5,22 @@ import { useRouter } from "next/navigation";
 import BreadCrum from "./BreadCrum";
 import { useSelector, useDispatch } from "react-redux";
 import { getTags, deleteTags } from "@/lib/Features/Tags/tagsSlice";
-import type { RootState, AppDispatch } from '@/lib/Store/store';
+import { FaChevronLeft, FaChevronRight, FaEye } from "react-icons/fa";
+import { MdDelete } from "react-icons/md";
+import type { RootState, AppDispatch } from "@/lib/Store/store";
 import { MdClose } from "react-icons/md";
 import { TiTick } from "react-icons/ti";
 import { toast, ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 
 const TagsDetail = () => {
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const dispatch = useDispatch<AppDispatch>();
-  const { allTags, getLoading, totalPages, total } = useSelector((state: RootState) => state.tags);
+  const { allTags, getLoading, totalPages, total } = useSelector(
+    (state: RootState) => state.tags
+  );
+  console.log(allTags, "Tags Data");
   const [currentPages, setCurrentPages] = useState(1);
   const itemsPerPage = 10;
   const [yachtsToDelete, setYachtsToDelete] = useState<string | null>(null);
@@ -26,15 +31,44 @@ const TagsDetail = () => {
     dispatch(getTags({ page: currentPages, limit: itemsPerPage }));
   }, [currentPages, itemsPerPage, dispatch]);
 
-
-  const filteredData = allTags
-    ?.filter(tags =>
-      tags?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredData =
+    allTags?.filter((tags) =>
+      tags?.Name?.toLowerCase().includes(searchTerm.toLowerCase())
     ) || [];
-  const isFiltering = searchTerm.trim() !== '';
+  const isFiltering = searchTerm.trim() !== "";
   const currentItems = filteredData;
 
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPages(newPage);
+    }
+  };
 
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+    const pages: (number | string)[] = [];
+    if (totalPages <= 3) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      pages.push(1, "...", totalPages - 1, totalPages);
+    }
+    return pages.map((p, index) => (
+      <button
+        key={index}
+        className={`w-[35px] h-[35px] rounded-full border cursor-pointer ${
+          currentPages === p
+            ? "bg-[#012A50] text-white"
+            : "bg-white text-[#012A50]"
+        }`}
+        onClick={() => typeof p === "number" && handlePageChange(p)}
+        disabled={p === "..."}
+      >
+        {p}
+      </button>
+    ));
+  };
 
   const handleConfirm = () => {
     if (yachtsToDelete) {
@@ -56,47 +90,103 @@ const TagsDetail = () => {
     setIsModalOpen(false);
   };
 
-
+  // Helper function to truncate text to 15 words
+  const truncateToWords = (text: string, wordLimit: number = 15) => {
+    if (!text) return "";
+    const words = text.trim().split(/\s+/);
+    if (words.length <= wordLimit) return text;
+    return words.slice(0, wordLimit).join(" ") + "...";
+  };
 
   return (
     <>
-      <div className="">
+      <div className={`${currentItems.length > 7 ? "h-auto" : "h-[calc(100vh-115px)]"}`}>
         <BreadCrum onSearch={setSearchTerm} />
-        
-        {getLoading ? (
-          <div className="flex items-center justify-center h-[calc(100vh-14.1rem)]">
-            <div className="w-10 h-10 border-3 border-t-transparent border-[#012A50] rounded-full animate-spin" />
-          </div>
-        ) : isFiltering && currentItems.length === 0 ? (
-          <div className="flex items-center justify-center h-[calc(100vh-14.1rem)] text-lg text-[#012A50]">
-            No data available.
-          </div>
-        ) : allTags?.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-            {currentItems.map((tag, index) => (
-              <div key={index} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                <h3 className="font-semibold text-lg text-[#012A50] mb-2">{tag.name}</h3>
-                <p className="text-gray-600 text-sm mb-3">{tag.description || 'No description'}</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Slug: {tag.slug}</span>
-                  <button
-                    onClick={() => {
-                      setYachtsToDelete(tag._id);
-                      setIsModalOpen(true);
-                    }}
-                    className="text-red-500 hover:text-red-700 text-sm font-medium"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex items-center justify-center h-[calc(100vh-11.6rem)] text-lg text-[#012A50]">
-            No tags available.
-          </div>
-        )}
+        <div className="mt-4">
+          {getLoading ? (
+            <div className="flex items-center justify-center h-[calc(100vh-14.1rem)]">
+              <div className="w-10 h-10 border-3 border-t-transparent border-[#012A50] rounded-full animate-spin" />
+            </div>
+          ) : isFiltering && currentItems.length === 0 ? (
+            <div className="flex items-center justify-center h-[calc(100vh-14.1rem)] text-lg text-[#012A50]">
+              No data available.
+            </div>
+          ) : allTags?.length > 0 ? (
+            <div className="overflow-x-auto bg-white shadow-md rounded-lg">
+              <table className="w-full border-collapse table-fixed">
+                <thead className="bg-[#012A50] text-white">
+                  <tr>
+                    <th className="w-1/4 px-4 py-3 text-left">Name</th>
+                    <th className="w-1/4 px-4 py-3 text-left">Slug</th>
+                    <th className="w-1/3 px-4 py-3 text-left">Description</th>
+                    <th className="px-4 py-3 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentItems.map((tag, index) => (
+                    <tr
+                      key={index}
+                      onClick={() => router.push(`/tags/${tag._id}`)}
+                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      <td className="px-4 py-3 font-medium text-[#012A50]">
+                        {tag.Name}
+                      </td>
+                      <td className="px-4 py-3 text-gray-700">{tag.Slug}</td>
+                      <td className="px-4 py-3 text-gray-600">
+                        <div title={tag.Description}>
+                          {truncateToWords(tag.Description)}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 flex items-center justify-center gap-4">
+                        <button onClick={() => router.push(`/tags/${tag._id}`)} className="text-blue-500 hover:text-blue-700 cursor-pointer">
+                          <FaEye size={18} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setYachtsToDelete(tag._id);
+                            setIsModalOpen(true);
+                          }}
+                          className="text-red-500 hover:text-red-700 cursor-pointer"
+                        >
+                          <MdDelete size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-[calc(100vh-14.1rem)] text-lg text-[#012A50]">
+              No tags available.
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-center mt-10">
+          {total > 10 && !isFiltering && !getLoading && (
+            <div className="flex gap-2 items-center">
+              {currentPages > 1 && (
+                <button
+                  className="w-[35px] h-[35px] text-[16px] cursor-pointer text-[#012A50] flex justify-end items-center"
+                  onClick={() => handlePageChange(currentPages - 1)}
+                >
+                  <FaChevronLeft />
+                </button>
+              )}
+              {renderPagination()}
+              {currentPages < totalPages && (
+                <button
+                  className="w-[35px] h-[35px] text-[16px] cursor-pointer text-[#012A50]"
+                  onClick={() => handlePageChange(currentPages + 1)}
+                >
+                  <FaChevronRight />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
 
         {isModalOpen && (
           <div className="fixed inset-0 z-20 flex items-center justify-center bg-[#BABBBB]/40 bg-opacity-50">
@@ -123,7 +213,6 @@ const TagsDetail = () => {
             </div>
           </div>
         )}
-
       </div>
       <ToastContainer position="top-right" autoClose={3000} />
     </>
