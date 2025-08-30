@@ -28,8 +28,8 @@ const Details: React.FC<CustomersProps> = ({ goToNextTab }) => {
 
   return (
     <div className="flex flex-col justify-between h-[calc(100vh-214px)]">
-      {GeneralInfoData.map((section, Idx) => (
-        <div>
+      <div>
+        {GeneralInfoData.map((section, Idx) => (
           <div key={Idx}>
             {section.array && (
               <div className="grid md:grid-cols-2 gap-x-6">
@@ -50,15 +50,14 @@ const Details: React.FC<CustomersProps> = ({ goToNextTab }) => {
               </div>
             )}
           </div>
-          <div className="mt-4 flex items-center">
-            <p className="w-[27rem] text-[#222222] font-bold">Description</p>
-            <p className="font-inter font-medium text-[#222222] w-full break-words">
-              {tags?.Description}
-            </p>
-          </div>
+        ))}
+        <div className="mt-4 flex items-center">
+          <p className="w-[27rem] text-[#222222] font-bold">Description</p>
+          <p className="font-inter font-medium text-[#222222] w-full break-words">
+            {tags?.Description}
+          </p>
         </div>
-      ))}
-      <div></div>
+      </div>
       <div className="flex justify-between">
         <button
           onClick={() => router.push("/tags")}
