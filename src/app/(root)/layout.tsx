@@ -43,7 +43,7 @@ const IndexLayout: React.FC<Props> = ({ children }) => {
             </div>
             <div className="lg:ml-[200px] xl:ml-[240px] 2xl:ml-[260px] w-full bg-[#F8F9FA] lg:rounded-tl-[31px] lg:rounded-bl-[31px]">
                 <Header />
-                <main className="mt-[3rem] sm:mt-[4.6rem] lg:mt-[4.6rem] 2xl:mt-[5rem] px-4 py-4 sm:py-4 2xl:px-8">
+                <main className="mt-[3rem] sm:mt-[5.1rem] px-4 py-4">
                     {children}
                 </main>
             </div>

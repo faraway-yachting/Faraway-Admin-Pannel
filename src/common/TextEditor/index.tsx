@@ -616,7 +616,16 @@ const RichTextEditor: React.FC<RichTextEditorOneProps> = ({ value = "", onChange
           const imageUrl = reader.result as string
           if (!editorRef.current || !editorWrapperRef.current) return
 
-          const selection = window.getSelection()
+          let selection = window.getSelection()
+          if (!selection || selection.rangeCount === 0) {
+            editorRef.current.focus()
+            const newRange = document.createRange()
+            newRange.selectNodeContents(editorRef.current)
+            newRange.collapse(false) // place caret at end
+            selection = window.getSelection()
+            selection?.removeAllRanges()
+            selection?.addRange(newRange)
+          }
           if (selection && selection.rangeCount > 0) {
             const range = selection.getRangeAt(0)
 
@@ -999,6 +1008,35 @@ const RichTextEditor: React.FC<RichTextEditorOneProps> = ({ value = "", onChange
   // Handle keyboard shortcuts
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLDivElement>) => {
+      
+      if ((e.key === "Delete" || e.key === "Backspace") && selectedImage && editorRef.current) {
+        e.preventDefault()
+        const imgToRemove = selectedImage
+        const parentNode = imgToRemove.parentNode
+        // Insert a placeholder to position the caret after deletion
+        const placeholder = document.createElement("span")
+        placeholder.innerHTML = "<br>"
+        if (parentNode) {
+          // Try to place caret after the image
+          parentNode.insertBefore(placeholder, imgToRemove.nextSibling)
+          imgToRemove.remove()
+          const selection = window.getSelection()
+          if (selection) {
+            const newRange = document.createRange()
+            newRange.selectNodeContents(placeholder)
+            newRange.collapse(true)
+            selection.removeAllRanges()
+            selection.addRange(newRange)
+          }
+        } else {
+          // Fallback just in case
+          imgToRemove.remove()
+        }
+        setSelectedImage(null)
+        setEditorContent(editorRef.current.innerHTML)
+        return
+      }
+
       // Shift + Enter for new table row OR to leave bullet points
       if (e.shiftKey && e.key === "Enter") {
         const selection = window.getSelection()

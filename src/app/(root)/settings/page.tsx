@@ -2,7 +2,7 @@ import Settings from "@/components/Settings";
 
 const SettingsPage: React.FC = () => {
     return (
-        <div className='lg:h-[calc(100vh-106px)]'>
+        <div className='h-[calc(100vh-124px)]'>
             <Settings />
         </div>
     )

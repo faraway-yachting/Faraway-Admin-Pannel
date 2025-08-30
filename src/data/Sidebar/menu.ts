@@ -3,6 +3,7 @@ import { FaSailboat } from "react-icons/fa6";
 import Settings from "@/icons/Settings";
 import { IoMdLogOut } from "react-icons/io";
 import { RiBloggerLine } from "react-icons/ri";
+import { IoIosPricetags } from "react-icons/io";
 
 
 export interface MenuItem {
@@ -24,6 +25,12 @@ export const AdminMenus: SidebarMenu[] = [
         title: "Dashboard",
         link: "/dashboard",
         icon: Grid,
+      },
+      {
+        id: "tags",
+        title: "Tags",
+        link: "/tags",
+        icon: IoIosPricetags,
       },
       {
         id: "yachts",

@@ -31,7 +31,7 @@ const Sidebar: React.FC<Props> = ({ menus }) => {
 
   return (
     <aside className="lg:w-[200px] xl:w-[240px] 2xl:w-[260px] fixed inset-y-0 left-0 z-10 h-screen bg-[#ecebeb]">
-      <div className="flex items-center justify-center lg:h-[4.5rem] 2xl:h-[5rem]">
+      <div className="flex items-center justify-center lg:h-[4.5rem]">
         <button onClick={() => router.push("/dashboard")}>
           <Image
             src="/images/logo.png"
