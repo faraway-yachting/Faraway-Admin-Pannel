@@ -8,8 +8,8 @@ export interface Blog {
   slug?: string;
   shortDescription?: string;
   detailDescription?: string;
-  image?: File | string; // stored image URL from backend
-  status?: "draft" | "published"; // Make status optional since it might not exist in API response
+  image?: File | string;
+  status?: "draft" | "published";
   createdAt?: string;
   updatedAt?: string;
 }
@@ -33,7 +33,7 @@ export interface AddBlogPayload {
 export interface UpdateBlogPayload {
   blogId: string;
   data: Partial<Omit<AddBlogPayload, "image">> & {
-    image?: File | string; // allow file, URL, or undefined
+    image?: File | string;
   };
 }
 
@@ -51,7 +51,7 @@ export interface PublishBlogPayload {
 interface BlogState {
   loading: boolean;
   blogs: Blog | null;
-  currentBlog: Blog | null; // Add currentBlog property
+  currentBlog: Blog | null;
   allBlogs: Blog[];
   error: string | null;
   addLoading: boolean;
@@ -66,7 +66,7 @@ interface BlogState {
 const initialState: BlogState = {
   loading: false,
   blogs: null,
-  currentBlog: null, // Initialize currentBlog
+  currentBlog: null,
   allBlogs: [],
   error: null,
   addLoading: false,
@@ -164,7 +164,6 @@ export const getBlogs = createAsyncThunk<
 );
 
 // Get Blog by ID
-// Get Blog by ID
 export const getBlogById = createAsyncThunk<
   Blog,
   { blogId: string },
@@ -183,12 +182,11 @@ export const getBlogById = createAsyncThunk<
         }
       );
 
-      return response.data.data; // ensure this is a single blog object
+      return response.data.data;
      
     } catch (error) {
       let message = "Something went wrong";
       
-      // Safely extract error message
       if (error && typeof error === 'object') {
         if ('response' in error) {
           const axiosError = error as { response?: { data?: { message?: string; error?: { message?: string } } }; message?: string };

@@ -8,11 +8,8 @@ import type { RootState, AppDispatch } from "@/lib/Store/store";
 import { toast, ToastContainer } from "react-toastify";
 import { useFormik } from "formik";
 import "react-toastify/dist/ReactToastify.css";
-import { addYachts } from "@/lib/Features/Yachts/yachtsSlice";
-import {
-    tagsValidationSchema,
-  FormTagsValues,
-} from "@/lib/Validation/addtagsValidationSchema";
+import { addTags } from "@/lib/Features/Tags/tagsSlice";
+import {tagsValidationSchema, FormTagsValues} from "@/lib/Validation/addtagsValidationSchema";
 import Tick from "@/icons/Tick";
 
 const AddNewTags: React.FC = () => {
@@ -40,62 +37,26 @@ const AddNewTags: React.FC = () => {
           setSubmitting(false);
           return;
         }
-        // const resultAction = await dispatch(
-        //   addYachts({
-        //     boatType: values["Boat Type"] ?? "",
-        //     price: values["Category"] ?? "",
-        //     capacity: values["Capacity"] ?? "",
-        //     length: values["Length"] ?? "",
-        //     lengthRange: values["Length Range"] ?? "",
-        //     title: values["Title"] ?? "",
-        //     cabins: values["Cabins"],
-        //     bathrooms: values["Bathrooms"],
-        //     passengerDayTrip: values["Passenger Day Trip"],
-        //     passengerOvernight: values["Passenger Overnight"],
-        //     guests: values["Guests"],
-        //     guestsRange: values["Guests Range"],
-        //     dayTripPrice: values["Day Trip Price"],
-        //     overnightPrice: values["Overnight Price"],
-        //     daytripPriceEuro: values["Daytrip Price (Euro)"],
-        //     // daytripPriceTHB: values["Daytrip Price (THB)"] ?? "",
-        //     // daytripPriceUSD: values["Daytrip Price (USD)"] ?? "",
-        //     primaryImage: values["Primary Image"] as File,
-        //     galleryImages: values["Gallery Images"] as File[],
-        //     // priceEditor: values["Price"] ?? "",
-        //     // tripDetailsEditor: values["Trip Details"] ?? "",
-        //     dayCharter: values["Day Charter"] ?? "",
-        //     overnightCharter: values["Overnight Charter"] ?? "",
-        //     aboutThisBoat: values["About this Boat"] ?? "",
-        //     specifications: values["Specifications"] ?? "",
-        //     boatLayout: values["Boat Layout"] ?? "",
-        //     videoLink: values["Video Link"] || undefined,
-        //     // videoLink2: values["Video Link 2"] ?? "",
-        //     // videoLink3: values["Video Link 3"] ?? "",
-        //     badge: values["Badge"] ?? "",
-        //     slug: values["Slug"] ?? "",
-        //     design: values["Design"] ?? "",
-        //     built: values["Built"] ?? "",
-        //     cruisingSpeed: values["Cruising Speed"] ?? "",
-        //     lengthOverall: values["Length Overall"] ?? "",
-        //     fuelCapacity: values["Fuel Capacity"] ?? "",
-        //     waterCapacity: values["Water Capacity"] ?? "",
-        //     code: values["Code"] ?? "",
-        //     type: values["Yacht Type"] ?? "",
-        //   })
-        // );
-        // if (addYachts.fulfilled.match(resultAction)) {
-        //   toast.success("Yachts Register successfully", {
-        //     onClose: () => {
-        //       router.push("/yachts");
-        //     },
-        //   });
-        //   formik.resetForm();
-        // } else if (addYachts.rejected.match(resultAction)) {
-        //   const errorPayload = resultAction.payload as {
-        //     error: { message: string };
-        //   };
-        //   toast.error(errorPayload?.error?.message || "Something went wrong.");
-        // }
+        const resultAction = await dispatch(
+          addTags({
+            name: values["Name"] ?? "",
+            slug: values["Slug"] ?? "",
+            description: values["Description"] ?? ""
+          })
+        );
+        if (addTags.fulfilled.match(resultAction)) {
+          toast.success("Tags Register successfully", {
+            onClose: () => {
+              router.push("/tags");
+            },
+          });
+          formik.resetForm();
+        } else if (addTags.rejected.match(resultAction)) {
+          const errorPayload = resultAction.payload as {
+            error: { message: string };
+          };
+          toast.error(errorPayload?.error?.message || "Something went wrong.");
+        }
       } catch (error) {
         console.error(error);
         toast.error("An unexpected error occurred");
@@ -111,7 +72,7 @@ const AddNewTags: React.FC = () => {
 
   return (
     <>
-      <form onSubmit={formik.handleSubmit} className="flex flex-col justify-between h-[calc(100vh-112px)]">
+      <form onSubmit={formik.handleSubmit} className="flex flex-col justify-between h-[calc(100vh-106px)]">
         {NewTagsData.map((section, sectionIndex) => {
           return (
             <div key={sectionIndex}>

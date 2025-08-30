@@ -42,7 +42,7 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-112px)]">
+      <div className="flex items-center justify-center h-[calc(100vh-106px)]">
         <div className="w-10 h-10 border-3 border-t-transparent border-[#012A50] rounded-full animate-spin" />
       </div>
     );

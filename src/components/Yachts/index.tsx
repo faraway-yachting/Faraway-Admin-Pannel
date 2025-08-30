@@ -192,11 +192,11 @@ const YachtsDetail = () => {
       <div>
         <BreadCrum onSearch={setSearchTerm} />
         {getLoading ? (
-          <div className="flex items-center justify-center h-[calc(100vh-14.5rem)]">
+          <div className="flex items-center justify-center h-[calc(100vh-14.1rem)]">
             <div className="w-10 h-10 border-3 border-t-transparent border-[#012A50] rounded-full animate-spin" />
           </div>
         ) : isFiltering && currentItems.length === 0 ? (
-          <div className="flex items-center justify-center h-[calc(100vh-14.5rem)] text-lg text-[#012A50]">
+          <div className="flex items-center justify-center h-[calc(100vh-14.1rem)] text-lg text-[#012A50]">
             No data available.
           </div>
         ) : allYachts?.length > 0 ? (
