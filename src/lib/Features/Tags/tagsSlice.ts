@@ -105,8 +105,6 @@ export const getTags = createAsyncThunk<
   async (params, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      
-      // Build query string based on whether params are provided
       let queryString = "https://awais.thedevapp.online/tags/all-tags";
       if (params && (params.page || params.limit)) {
         const queryParams = new URLSearchParams();
