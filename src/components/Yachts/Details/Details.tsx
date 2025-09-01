@@ -52,7 +52,6 @@ const Yachts: React.FC<CustomersProps> = ({ goToNextTab }) => {
                 { label: "Fuel Capacity", optional: "(Optional)", data: yachts?.fuelCapacity || "N/A" },
                 { label: "Water Capacity", optional: "(Optional)", data: yachts?.waterCapacity || "N/A" },
                 { label: "Code", optional: "(Optional)", data: yachts?.code || "N/A" },
-                { label: "Tag", optional: "(Optional)", data: yachts?.tag || "N/A" },
             ],
             iconone: MdKeyboardArrowLeft,
             btn: "Back",
@@ -80,6 +79,17 @@ const Yachts: React.FC<CustomersProps> = ({ goToNextTab }) => {
                                 ))}
                         </div>
                     )}
+                    <div className="mt-4">
+                        <h2 className="font-bold text-[#222222] mb-4">Tags</h2>
+                        <div className="space-y-2">
+                            {yachts?.tags?.map((tag) => (
+                                <div key={tag} className="flex items-center">
+                                    <span className="text-[#222222] mr-2">•</span>
+                                    <span className="text-[#222222] font-medium text-[14px]">{tag}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                     {yachts?.dayCharter?.trim() && (
                         <div className="mt-4">
                             <h2 className="font-bold text-[#222222] mb-4">Day Charter</h2>

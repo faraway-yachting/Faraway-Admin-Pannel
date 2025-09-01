@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { NewYachtsData, RichTextEditorSections } from "@/data/Yachts";
 import Image from "next/image";
@@ -19,6 +19,7 @@ import { MdKeyboardArrowLeft } from "react-icons/md";
 import RichTextEditor from "@/common/TextEditor";
 import Tick from "@/icons/Tick";
 import { getTags } from "@/lib/Features/Tags/tagsSlice";
+import { RiArrowDownSLine } from "react-icons/ri";
 
 interface CustomerProps {
   goToPrevTab: () => void;
@@ -39,6 +40,8 @@ type RichTextFieldKey =
   | "Boat Layout";
 
 const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
+  const [isTagsOpen, setIsTagsOpen] = useState(false);
+  
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const { yachts, loading } = useSelector((state: RootState) => state.yachts);
@@ -47,6 +50,21 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
   useEffect(() => {
     dispatch(getTags());
   }, [dispatch]);
+
+  // Close tags dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (isTagsOpen && !target.closest('.tags-dropdown')) {
+        setIsTagsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isTagsOpen]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -176,7 +194,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
       "Water Capacity": yachts?.waterCapacity || "",
       Code: yachts?.code || "",
       "Yacht Type": yachts?.type || "",
-      Tags: yachts?.tag || "",
+      "Tags": yachts?.tags || [] as string[],
     },
     validationSchema: yachtsUpdateValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -215,6 +233,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
             "Length Overall": true,
             "Fuel Capacity": true,
             "Water Capacity": true,
+            Tags: true,
             Code: true,
             "Yacht Type": true,
           });
@@ -263,7 +282,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
               waterCapacity: values["Water Capacity"] ?? "",
               code: values["Code"] ?? "",
               type: values["Yacht Type"],
-              tag: values["Tags"] ?? "",
+              tags: (values["Tags"] ?? []).filter((t: string | undefined): t is string => typeof t === "string"),
             },
             yachtsId: id.toString(),
           })
@@ -345,7 +364,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
                     return (
                       <div
                         key={index}
-                        className="col-span-1 sm:col-span-4 md:col-span-4 lg:col-span-4 xl:col-span-4"
+                        className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-4"
                       >
                         <label className="flex items-center gap-2 w-fit">
                           <input
@@ -398,8 +417,8 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
                       key={index}
                       className={`${
                         isFileUpload
-                          ? "col-span-1 sm:col-span-4 md:col-span-4 lg:col-span-4 xl:col-span-4"
-                          : "col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-1 xl:col-span-1"
+                          ? "col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-4"
+                          : ""
                       }`}
                     >
                       <div className="flex items-center gap-1 mb-2">
@@ -413,54 +432,77 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
 
                       {isTag ? (
                         <>
-                          <div
-                            className={`bg-[#F0F2F4] rounded-lg px-3 py-2 w-full ${
-                              fieldError ? "border border-[#DB2828]" : ""
+                        <div
+                          className={`bg-[#F0F2F4] rounded-lg px-3 py-2 w-full ${fieldError ? "border border-[#DB2828]" : ""
                             }`}
-                          >
-                            <select
-                              name={fieldName}
-                              value={formik.values[fieldName] as string}
-                              onChange={(e) => {
-                                formik.handleChange(e);
-                                formik.setFieldTouched(fieldName, true, false);
-                              }}
-                              onBlur={formik.handleBlur}
-                              className={`w-full outline-0 cursor-pointer ${
-                                value ? "text-[#222222]" : "text-[#999999]"
-                              }`}
+                        >
+                          <div className="relative tags-dropdown">
+                            <button
+                              type="button"
+                              onClick={() => setIsTagsOpen(!isTagsOpen)}
+                              className="w-full rounded-md cursor-pointer flex items-center justify-between"
                             >
-                              <option value="" disabled hidden>
-                                {field.placeholder}
-                              </option>
-                              {allTags && allTags.length > 0 ? (
-                                allTags.map((tag) => (
-                                  <option
-                                    key={tag._id}
-                                    value={tag.Name}
-                                    className="text-[#222222] outline-0 pt-4"
-                                  >
-                                    {tag.Name}
-                                  </option>
-                                ))
-                              ) : (
-                                <option
-                                  value=""
-                                  disabled
-                                  className="text-[#999999]"
-                                >
-                                  No Tags Available
-                                </option>
-                              )}
-                            </select>
+                              <span className={Array.isArray(formik.values[fieldName]) && formik.values[fieldName].length > 0 ? "text-[#222222]" : "text-[#999999]"}>
+                                {Array.isArray(formik.values[fieldName]) && formik.values[fieldName].length > 0 
+                                  ? `${formik.values[fieldName].length} tags selected`
+                                  : "Select tags"
+                                }
+                              </span>
+                              <RiArrowDownSLine className={`transition-transform text-[#999999] ${isTagsOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {isTagsOpen && (
+                              <div className="absolute top-full left-0 scrollbar-thick right-0 z-10 mt-1 max-h-[200px] overflow-y-auto border hover:text-white border-gray-300 rounded-md bg-white shadow-lg">
+                                {allTags && allTags.length > 0 ? (
+                                  allTags.map((tag) => (
+                                    <label
+                                      key={tag._id}
+                                      onClick={() => {
+                                        const currentValues = Array.isArray(formik.values[fieldName]) ? formik.values[fieldName] : [];
+                                        const isSelected = currentValues.includes(tag.Name);
+                                        let newValues;
+                                        if (isSelected) {
+                                          newValues = currentValues.filter(value => value !== tag.Name);
+                                        } else {
+                                          newValues = [...currentValues, tag.Name];
+                                        }
+                                        formik.setFieldValue(fieldName, newValues);
+                                        formik.setFieldTouched(fieldName, true, false);
+                                      }}
+                                      className={`flex items-center justify-between px-3 py-2 cursor-pointer hover:text-white hover:bg-[#1967D2] ${
+                                        Array.isArray(formik.values[fieldName]) && formik.values[fieldName].includes(tag.Name)
+                                          ? "bg-blue-50"
+                                          : ""
+                                      }`}
+                                    >
+                                      <span className="text-sm text-[#222222] hover:text-white">{tag.Name}</span>
+                                      {Array.isArray(formik.values[fieldName]) && formik.values[fieldName].includes(tag.Name) && (
+                                        <span className="text-[#222222]">
+                                          <Tick />
+                                        </span>
+                                      )}
+                                    </label>
+                                  ))
+                                ) : (
+                                  <div className="px-3 py-2 text-[#999999] text-sm">
+                                    No Tags Available
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            <input
+                              type="hidden"
+                              name={fieldName}
+                              value={Array.isArray(formik.values[fieldName]) ? formik.values[fieldName].join(",") : ""}
+                            />
                           </div>
-                          {fieldError && (
-                            <p className="text-[#DB2828] text-sm mt-1">
-                              {typeof formik.errors[fieldName] === "string" &&
-                                formik.errors[fieldName]}
-                            </p>
-                          )}
-                        </>
+                        </div>
+                        {fieldError && (
+                          <p className="text-[#DB2828] text-sm mt-1">
+                            {typeof formik.errors[fieldName] === "string" &&
+                              formik.errors[fieldName]}
+                          </p>
+                        )}
+                      </>
                       ) : isDropdown ? (
                         <>
                           <div

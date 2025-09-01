@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   NewYachtsData,
   RichTextEditorSections,
@@ -21,6 +21,8 @@ import {
 import RichTextEditor from "@/common/TextEditor";
 import Tick from "@/icons/Tick";
 import { getTags } from "@/lib/Features/Tags/tagsSlice";
+import { RiArrowDownSLine } from "react-icons/ri";
+
 
 type RichTextFieldKey =
   // | "Price"
@@ -39,10 +41,24 @@ const AddNewYachts: React.FC = () => {
   const { allTags } = useSelector(
     (state: RootState) => state.tags
   );
+  const [isTagsOpen, setIsTagsOpen] = useState(false);
 
   useEffect(() => {
     dispatch(getTags());
   }, [dispatch]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (isTagsOpen && !target.closest('.tags-dropdown')) {
+        setIsTagsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isTagsOpen]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -140,7 +156,7 @@ const AddNewYachts: React.FC = () => {
       "Length Overall": "",
       "Fuel Capacity": "",
       "Water Capacity": "",
-      "Tags": "",
+      "Tags": [] as string[],
       Code: "",
       "Yacht Type": "",
     },
@@ -187,6 +203,7 @@ const AddNewYachts: React.FC = () => {
             "Length Overall": true,
             "Fuel Capacity": true,
             "Water Capacity": true,
+            Tags: true,
             Code: true,
             "Yacht Type": true,
           });
@@ -202,7 +219,7 @@ const AddNewYachts: React.FC = () => {
             lengthRange: values["Length Range"] ?? "",
             title: values["Title"] ?? "",
             cabins: values["Cabins"],
-            tag: values["Tags"] ?? "",
+            tags: (values["Tags"] ?? []).filter((t: string | undefined): t is string => typeof t === "string"),
             bathrooms: values["Bathrooms"],
             passengerDayTrip: values["Passenger Day Trip"],
             passengerOvernight: values["Passenger Overnight"],
@@ -297,7 +314,7 @@ const AddNewYachts: React.FC = () => {
                     return (
                       <div
                         key={index}
-                        className="col-span-1 sm:col-span-4 md:col-span-4 lg:col-span-4 xl:col-span-4"
+                        className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-4"
                       >
                         <label className="flex items-center gap-2 w-fit">
                           <input
@@ -349,8 +366,8 @@ const AddNewYachts: React.FC = () => {
                     <div
                       key={index}
                       className={`${isFileUpload
-                        ? "col-span-1 sm:col-span-4 md:col-span-4 lg:col-span-4 xl:col-span-4"
-                        : "col-span-1 sm:col-span-2 md:col-span-1 lg:col-span-1 xl:col-span-1"
+                        ? "col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-4"
+                        : ""
                         }`}
                     >
                       <div className="flex items-center gap-1 mb-2">
@@ -367,36 +384,65 @@ const AddNewYachts: React.FC = () => {
                             className={`bg-[#F0F2F4] rounded-lg px-3 py-2 w-full ${fieldError ? "border border-[#DB2828]" : ""
                               }`}
                           >
-                            <select
-                              name={fieldName}
-                              value={formik.values[fieldName] as string}
-                              onChange={(e) => {
-                                formik.handleChange(e);
-                                formik.setFieldTouched(fieldName, true, false);
-                              }}
-                              onBlur={formik.handleBlur}
-                              className={`w-full outline-0 cursor-pointer ${value ? "text-[#222222]" : "text-[#999999]"
-                                }`}
-                            >
-                              <option value="" disabled hidden>
-                                {field.placeholder}
-                              </option>
-                              {allTags && allTags.length > 0 ? (
-                                allTags.map((tag) => (
-                                  <option
-                                    key={tag._id}
-                                    value={tag.Name}
-                                    className="text-[#222222] outline-0 pt-4"
-                                  >
-                                    {tag.Name}
-                                  </option>
-                                ))
-                              ) : (
-                                <option value="" disabled className="text-[#999999]">
-                                  No Tags Available
-                                </option>
+                            <div className="relative tags-dropdown">
+                              <button
+                                type="button"
+                                onClick={() => setIsTagsOpen(!isTagsOpen)}
+                                className="w-full rounded-md cursor-pointer flex items-center justify-between"
+                              >
+                                <span className={Array.isArray(formik.values[fieldName]) && formik.values[fieldName].length > 0 ? "text-[#222222]" : "text-[#999999]"}>
+                                  {Array.isArray(formik.values[fieldName]) && formik.values[fieldName].length > 0 
+                                    ? `${formik.values[fieldName].length} tags selected`
+                                    : "Select tags"
+                                  }
+                                </span>
+                                <RiArrowDownSLine className={`transition-transform text-[#999999] ${isTagsOpen ? 'rotate-180' : ''}`} />
+                              </button>
+                              {isTagsOpen && (
+                                <div className="absolute top-full left-0 scrollbar-thick right-0 z-10 mt-1 max-h-[200px] overflow-y-auto border hover:text-white border-gray-300 rounded-md bg-white shadow-lg">
+                                  {allTags && allTags.length > 0 ? (
+                                    allTags.map((tag) => (
+                                      <label
+                                        key={tag._id}
+                                        onClick={() => {
+                                          const currentValues = Array.isArray(formik.values[fieldName]) ? formik.values[fieldName] : [];
+                                          const isSelected = currentValues.includes(tag.Name);
+                                          let newValues;
+                                          if (isSelected) {
+                                            newValues = currentValues.filter(value => value !== tag.Name);
+                                          } else {
+                                            newValues = [...currentValues, tag.Name];
+                                          }
+                                          formik.setFieldValue(fieldName, newValues);
+                                          formik.setFieldTouched(fieldName, true, false);
+                                        }}
+                                        className={`flex items-center justify-between px-3 py-2 cursor-pointer hover:text-white hover:bg-[#1967D2] ${
+                                          Array.isArray(formik.values[fieldName]) && formik.values[fieldName].includes(tag.Name)
+                                            ? "bg-blue-50"
+                                            : ""
+                                        }`}
+                                      >
+                                        <span className="text-sm text-[#222222] hover:text-white">{tag.Name}</span>
+                                        {Array.isArray(formik.values[fieldName]) && formik.values[fieldName].includes(tag.Name) && (
+                                          <span className="text-[#222222]">
+                                            <Tick />
+                                          </span>
+                                        )}
+                                      </label>
+                                    ))
+                                  ) : (
+                                    <div className="px-3 py-2 text-[#999999] text-sm">
+                                      No Tags Available
+                                    </div>
+                                  )}
+                                </div>
                               )}
-                            </select>
+                              <input
+                                type="hidden"
+                                name={fieldName}
+                                value={Array.isArray(formik.values[fieldName]) ? formik.values[fieldName].join(",") : ""}
+                              />
+                            </div>
                           </div>
                           {fieldError && (
                             <p className="text-[#DB2828] text-sm mt-1">
@@ -404,7 +450,7 @@ const AddNewYachts: React.FC = () => {
                                 formik.errors[fieldName]}
                             </p>
                           )}
-                        </>  
+                        </>
                       ) : isDropdown ? (
                         <>
                           <div
