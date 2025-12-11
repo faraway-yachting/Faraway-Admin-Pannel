@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     unoptimized: false,
     formats: ['image/webp', 'image/avif'],
   },
+  env: {
+    BACKEND_URL: process.env.BACKEND_URL,
+  },
   // Removed experimental.optimizeCss as it causes build issues
 };
 

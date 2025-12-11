@@ -1,5 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios, { AxiosError } from "axios";
+import { getBackendUrl } from "@/lib/env";
+
+// Get API URL from env utility (handles both NEXT_PUBLIC_BACKEND_URL and BACKEND_URL)
+const API_URL = getBackendUrl();
 
 export interface AddYachtsPayload {
   boatType: string;
@@ -146,17 +150,13 @@ export const addYachts = createAsyncThunk<
   async (credentials, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post(
-        "https://awais.thedevapp.online/yacht/add-yacht",
-        credentials,
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await axios.post(`${API_URL}/yacht/add-yacht`, credentials, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
       if (response?.data.error) {
         throw new Error(
           response?.data?.error?.message || "Something went wrong"
@@ -185,7 +185,7 @@ export const getYachts = createAsyncThunk<
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://awais.thedevapp.online/yacht/all-yachts?page=${page}&limit=${limit}`,
+        `${API_URL}/yacht/all-yachts?page=${page}&limit=${limit}`,
         {
           withCredentials: true,
           headers: {
@@ -218,15 +218,12 @@ export const getYachtsById = createAsyncThunk(
   ) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `https://awais.thedevapp.online/yacht?id=${yachtsId}`,
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(`${API_URL}/yacht?id=${yachtsId}`, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return {
         yachts: response.data.data
       };
@@ -248,7 +245,7 @@ export const updateYachts = createAsyncThunk(
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        `https://awais.thedevapp.online/yacht/edit-yacht?id=${yachtsId}`,
+        `${API_URL}/yacht/edit-yacht?id=${yachtsId}`,
         payload,
         {
           withCredentials: true,
@@ -287,7 +284,7 @@ export const deleteYachts = createAsyncThunk<
     try {
       const token = localStorage.getItem("token");
       const response = await axios.delete(
-        `https://awais.thedevapp.online/yacht/delete-yacht?id=${id}`,
+        `${API_URL}/yacht/delete-yacht?id=${id}`,
         {
           withCredentials: true,
           headers: {
@@ -325,7 +322,7 @@ export const publishYacht = createAsyncThunk<
         status: status
       };
       const response = await axios.patch(
-        `https://awais.thedevapp.online/yacht/update-status?id=${yachtId}`,
+        `${API_URL}/yacht/update-status?id=${yachtId}`,
         payload,
         {
           withCredentials: true,
