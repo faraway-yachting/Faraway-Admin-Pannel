@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateBlog, getBlogById } from "@/lib/Features/Blog/blogSlice";
 import type { AppDispatch, RootState } from '@/lib/Store/store';
@@ -62,6 +63,7 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
   const router = useRouter();
   const { currentBlog, loading } = useSelector((state: RootState) => state.blog);
   const hasInitialized = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // Ensure blog data is loaded when component mounts
   useEffect(() => {
     if (id) {
@@ -92,19 +94,19 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
   const formik = useFormik<FormBlogUpdateValues>({
     enableReinitialize: true,
     initialValues: {
-      title: currentBlog?.title || "",
+      title: currentBlog?.title || currentBlog?.translations?.en?.title || "",
       slug: currentBlog?.slug || "",
-      shortDescription: currentBlog?.shortDescription || "",
-      detailDescription: currentBlog?.detailDescription || "",
+      shortDescription: currentBlog?.shortDescription || currentBlog?.translations?.en?.shortDescription || "",
+      detailDescription: currentBlog?.detailDescription || currentBlog?.translations?.en?.detailDescription || "",
       image: currentBlog?.image || "",
     },
     validationSchema: updateBlogValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        // Validate all required fields
+        setIsSubmitting(true);
+        
         const errors = await formik.validateForm();
         if (Object.keys(errors).length > 0) {
-          // Set all fields as touched to show validation errors
           formik.setTouched({
             title: true,
             slug: true,
@@ -113,16 +115,16 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
             image: true,
           });
           setSubmitting(false);
+          setIsSubmitting(false);
           return;
         }
         
-        // Ensure image is provided
         if (!values.image && !currentBlog?.image) {
           toast.error("Image is required");
+          setIsSubmitting(false);
           return;
         }
         
-        // Prepare the data object with required values
         const updateData: {
           title: string;
           slug: string;
@@ -163,6 +165,7 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
         toast.error("An unexpected error occurred");
       } finally {
         setSubmitting(false);
+        setIsSubmitting(false);
       }
     },
   });
@@ -178,10 +181,10 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
       // Use formik.resetForm to properly initialize all values
       formik.resetForm({
         values: {
-          title: currentBlog.title || "",
+          title: currentBlog.title || currentBlog.translations?.en?.title || "",
           slug: currentBlog.slug || "",
-          shortDescription: currentBlog.shortDescription || "",
-          detailDescription: currentBlog.detailDescription || "",
+          shortDescription: currentBlog.shortDescription || currentBlog.translations?.en?.shortDescription || "",
+          detailDescription: currentBlog.detailDescription || currentBlog.translations?.en?.detailDescription || "",
           image: currentBlog.image || "",
         }
       });
@@ -204,15 +207,33 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
       </div>
     );
   }
+  const isLoading = loading || isSubmitting;
+
   return (
     <>
-      <form onSubmit={formik.handleSubmit} className="mt-4">
+      <form onSubmit={formik.handleSubmit} className="mt-4 relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg">
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative w-16 h-16">
+                <div className="absolute inset-0 border-4 border-[#012A50]/20 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-transparent border-t-[#012A50] rounded-full animate-spin"></div>
+              </div>
+              <div className="text-[#012A50] font-medium text-lg">
+                Updating blog and translating...
+              </div>
+              <div className="text-[#666666] text-sm">
+                This may take a few moments
+              </div>
+            </div>
+          </div>
+        )}
         {/* Blog Information Section */}
         <div className="bg-white shadow-xs rounded-lg px-2 py-2 w-full mb-6">
           <p className="text-[#001B48] font-bold text-[18px] mb-2 pb-2 border-b border-[#CCCCCC]">
             Blog Information
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}>
             {blogFields.map((field, index) => {
               const isFileUpload = field.type === "file";
               const fieldName = field.name as keyof FormBlogUpdateValues;
@@ -324,7 +345,7 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
         </div>
 
         {/* Rich Text Editor for Detail Description */}
-        <div className="bg-white shadow-xs rounded-lg px-2 py-2 w-full mb-6">
+        <div className={`bg-white shadow-xs rounded-lg px-2 py-2 w-full mb-6 ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}>
           <p className="text-[#001B48] font-bold text-[18px] mb-2 pb-2 border-b border-[#CCCCCC]">
             Detail Description
           </p>
@@ -343,18 +364,34 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
         <div className="mt-3 flex justify-between">
           <button
             onClick={goToPrevTab}
-            className="rounded-full px-[16px] py-[7px] border border-[#666666] text-[#222222] flex items-center gap-1 justify-center cursor-pointer font-medium"
+            disabled={isLoading}
+            className={`rounded-full px-[16px] py-[7px] border border-[#666666] text-[#222222] flex items-center gap-1 justify-center font-medium transition-all ${
+              isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-[#F0F2F4]"
+            }`}
           >
             <MdKeyboardArrowLeft />
             Back
           </button>
           <button
             type="submit"
-            disabled={loading}
-            className={`rounded-full px-[16px] py-[7px] bg-[#012A50] hover:bg-[#5F5C63] text-white text-center cursor-pointer font-medium flex items-center gap-2 ${loading ? "cursor-not-allowed" : "cursor-pointer"
-              }`}
+            disabled={isLoading}
+            className={`rounded-full px-[16px] py-[7px] bg-[#012A50] text-white text-center font-medium flex items-center gap-2 transition-all ${
+              isLoading 
+                ? "cursor-not-allowed opacity-75" 
+                : "cursor-pointer hover:bg-[#5F5C63] hover:scale-105 active:scale-95"
+            }`}
           >
-            {loading ? "Save ..." : <><Tick /> Save</>}
+            {isLoading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>Translating & Saving...</span>
+              </>
+            ) : (
+              <>
+                <Tick /> 
+                <span>Save</span>
+              </>
+            )}
           </button>
         </div>
       </form>

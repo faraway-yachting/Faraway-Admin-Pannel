@@ -5,7 +5,12 @@ import { getBackendUrl } from "@/lib/env";
 // Get API URL from env utility (handles both NEXT_PUBLIC_BACKEND_URL and BACKEND_URL)
 const API_URL = getBackendUrl();
 
-// Types
+export interface BlogTranslation {
+  title?: string;
+  shortDescription?: string;
+  detailDescription?: string;
+}
+
 export interface Blog {
   _id?: string;
   title?: string;
@@ -14,6 +19,15 @@ export interface Blog {
   detailDescription?: string;
   image?: File | string;
   status?: "draft" | "published";
+  translations?: {
+    en?: BlogTranslation;
+    fr?: BlogTranslation;
+    de?: BlogTranslation;
+    ru?: BlogTranslation;
+    zh?: BlogTranslation;
+    th?: BlogTranslation;
+    ar?: BlogTranslation;
+  };
   createdAt?: string;
   updatedAt?: string;
 }
@@ -151,7 +165,18 @@ export const getBlogs = createAsyncThunk<
           response?.data?.error?.message || "Something went wrong"
         );
       }
-      return response.data.data;
+      const data = response.data.data;
+      if (data && data.blogs) {
+        data.blogs = data.blogs.map((blog: Blog) => {
+          if (blog.translations && blog.translations.en) {
+            blog.title = blog.translations.en.title;
+            blog.shortDescription = blog.translations.en.shortDescription;
+            blog.detailDescription = blog.translations.en.detailDescription;
+          }
+          return blog;
+        });
+      }
+      return data;
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{ message: string }>;
       const message =
@@ -182,7 +207,15 @@ export const getBlogById = createAsyncThunk<
         }
       );
 
-      return response.data.data;
+      const blogData = response.data.data;
+      
+      if (blogData && blogData.translations && blogData.translations.en) {
+        blogData.title = blogData.translations.en.title;
+        blogData.shortDescription = blogData.translations.en.shortDescription;
+        blogData.detailDescription = blogData.translations.en.detailDescription;
+      }
+      
+      return blogData;
      
     } catch (error) {
       let message = "Something went wrong";
