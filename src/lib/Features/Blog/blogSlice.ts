@@ -166,16 +166,7 @@ export const getBlogs = createAsyncThunk<
         );
       }
       const data = response.data.data;
-      if (data && data.blogs) {
-        data.blogs = data.blogs.map((blog: Blog) => {
-          if (blog.translations && blog.translations.en) {
-            blog.title = blog.translations.en.title;
-            blog.shortDescription = blog.translations.en.shortDescription;
-            blog.detailDescription = blog.translations.en.detailDescription;
-          }
-          return blog;
-        });
-      }
+      // Return blogs with translations structure - no need to flatten
       return data;
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{ message: string }>;
@@ -209,12 +200,7 @@ export const getBlogById = createAsyncThunk<
 
       const blogData = response.data.data;
       
-      if (blogData && blogData.translations && blogData.translations.en) {
-        blogData.title = blogData.translations.en.title;
-        blogData.shortDescription = blogData.translations.en.shortDescription;
-        blogData.detailDescription = blogData.translations.en.detailDescription;
-      }
-      
+      // Return blog with translations structure - no need to flatten
       return blogData;
      
     } catch (error) {
@@ -287,7 +273,9 @@ export const updateBlog = createAsyncThunk<
         throw new Error(response.data.error.message || "API returned an error");
       }
 
-      return response.data;
+      // Backend returns { data: blog, message: "..." } structure
+      const updatedBlog = response.data.data || response.data;
+      return updatedBlog;
             } catch (error) {
       let message = "Something went wrong";
       
@@ -513,8 +501,16 @@ const blogSlice = createSlice({
       })
       .addCase(updateBlog.fulfilled, (state, action) => {
         state.addLoading = false;
-        state.blogs = action.payload;
-        state.currentBlog = action.payload; // Also update currentBlog
+        state.error = null;
+        // Update currentBlog with the updated blog data
+        state.currentBlog = action.payload;
+        // Update the blog in the blogs array if it exists
+        if (state.blogs && action.payload._id) {
+          const index = state.blogs.findIndex(blog => blog._id === action.payload._id);
+          if (index !== -1) {
+            state.blogs[index] = action.payload;
+          }
+        }
       })
       .addCase(updateBlog.rejected, (state, action) => {
         state.addLoading = false;

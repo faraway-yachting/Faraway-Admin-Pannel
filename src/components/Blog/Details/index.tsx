@@ -29,7 +29,7 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
   const blogInfoData = [
     {
       array: [
-        { label: "Title", data: currentBlog?.title || "N/A" },
+        { label: "Title", data: currentBlog?.translations?.en?.title || "N/A" },
         { label: "Slug", data: currentBlog?.slug || "N/A" },
         { label: "Status", data: currentBlog?.status || "N/A" },
       ],
@@ -112,7 +112,7 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
                   </h2>
                   <div className="prose max-w-full">
                     <p className="text-[#222222] font-medium leading-relaxed">
-                      {currentBlog.shortDescription}
+                      {currentBlog.translations?.en?.shortDescription || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -153,7 +153,7 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
           <div
             className="prose max-w-full"
             dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(currentBlog.detailDescription || ""),
+              __html: DOMPurify.sanitize(currentBlog.translations?.en?.detailDescription || ""),
             }}
           />
         </div>

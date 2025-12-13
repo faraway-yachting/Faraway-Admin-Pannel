@@ -94,10 +94,10 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
   const formik = useFormik<FormBlogUpdateValues>({
     enableReinitialize: true,
     initialValues: {
-      title: currentBlog?.title || currentBlog?.translations?.en?.title || "",
+      title: currentBlog?.translations?.en?.title || "",
       slug: currentBlog?.slug || "",
-      shortDescription: currentBlog?.shortDescription || currentBlog?.translations?.en?.shortDescription || "",
-      detailDescription: currentBlog?.detailDescription || currentBlog?.translations?.en?.detailDescription || "",
+      shortDescription: currentBlog?.translations?.en?.shortDescription || "",
+      detailDescription: currentBlog?.translations?.en?.detailDescription || "",
       image: currentBlog?.image || "",
     },
     validationSchema: updateBlogValidationSchema,
@@ -149,12 +149,13 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
         );
 
         if (updateBlog.fulfilled.match(resultAction)) {
+          // Refresh the blog data to get updated translations
+          await dispatch(getBlogById({ blogId: id.toString() }));
           toast.success("Blog updated successfully", {
             onClose: () => {
               router.push("/blog");
             },
           });
-          formik.resetForm();
         } else if (updateBlog.rejected.match(resultAction)) {
           const errorPayload = resultAction.payload as {
             error: { message: string };
@@ -181,10 +182,10 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
       // Use formik.resetForm to properly initialize all values
       formik.resetForm({
         values: {
-          title: currentBlog.title || currentBlog.translations?.en?.title || "",
+          title: currentBlog.translations?.en?.title || "",
           slug: currentBlog.slug || "",
-          shortDescription: currentBlog.shortDescription || currentBlog.translations?.en?.shortDescription || "",
-          detailDescription: currentBlog.detailDescription || currentBlog.translations?.en?.detailDescription || "",
+          shortDescription: currentBlog.translations?.en?.shortDescription || "",
+          detailDescription: currentBlog.translations?.en?.detailDescription || "",
           image: currentBlog.image || "",
         }
       });

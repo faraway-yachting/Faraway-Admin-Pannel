@@ -40,7 +40,7 @@ const BlogDetail = () => {
 
   const filteredData = allBlogs
     .filter(blog => {
-      const title = blog?.title || blog?.translations?.en?.title || '';
+      const title = blog?.translations?.en?.title || '';
       return title.toLowerCase().includes(searchTerm.toLowerCase());
     })
   const isFiltering = searchTerm.trim() !== '';
@@ -229,7 +229,7 @@ const BlogDetail = () => {
                       <div className="absolute bottom-0 bg-[#001B48] w-full py-4 rounded-tl-4xl">
                         <h3 className="font-plusjakarta font-extrabold text-center text-base md:text-lg lg:text-xl text-white leading-tight px-4">
                           {(() => {
-                            const title = blogItem.title || blogItem.translations?.en?.title || 'Untitled';
+                            const title = blogItem.translations?.en?.title || 'Untitled';
                             return title.length > 27 ? `${title.substring(0, 27)}...` : title;
                           })()}
                         </h3>
@@ -237,7 +237,7 @@ const BlogDetail = () => {
                     </div>
                     <div className="pt-[4px] px-4 flex flex-col h-50">
                       <p className="font-plusjakarta font-normal text-base lg:text-lg text-[#666666] mt-2 flex-1 overflow-hidden line-clamp-3">{(() => {
-                        const desc = blogItem.shortDescription || blogItem.translations?.en?.shortDescription || 'No description available';
+                        const desc = blogItem.translations?.en?.shortDescription || 'No description available';
                         return desc.length > 200 ? `${desc.substring(0, 200)}...` : desc;
                       })()}</p>
                       <div className="flex items-center justify-center gap-2 mt-3">
