@@ -108,11 +108,19 @@ export const addBlog = createAsyncThunk<
       const token = localStorage.getItem("token");
       
       const formData = new FormData();
-      formData.append("title", credentials.title);
-      formData.append("slug", credentials.slug);
+
+      // Build translations payload (model-style)
+      const translations = {
+        en: {
+          slug: credentials.slug.trim(),
+          title: credentials.title.trim(),
+          shortDescription: credentials.shortDescription.trim(),
+          detailDescription: credentials.detailDescription.trim(),
+        },
+      };
+
+      formData.append("translations", JSON.stringify(translations));
       formData.append("status", credentials.status);
-      formData.append("shortDescription", credentials.shortDescription);
-      formData.append("detailDescription", credentials.detailDescription);
       if (credentials.image) {
         formData.append("image", credentials.image);
       }
