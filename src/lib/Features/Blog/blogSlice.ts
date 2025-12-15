@@ -14,10 +14,6 @@ export interface BlogTranslation {
 
 export interface Blog {
   _id?: string;
-  title?: string;
-  slug?: string;
-  shortDescription?: string;
-  detailDescription?: string;
   image?: File | string;
   status?: "draft" | "published";
   translations?: {
