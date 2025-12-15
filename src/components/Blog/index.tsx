@@ -236,10 +236,26 @@ const BlogDetail = () => {
                       </div>
                     </div>
                     <div className="pt-[4px] px-4 flex flex-col h-50">
-                      <p className="font-plusjakarta font-normal text-base lg:text-lg text-[#666666] mt-2 flex-1 overflow-hidden line-clamp-3">{(() => {
-                        const desc = blogItem.translations?.en?.shortDescription || 'No description available';
-                        return desc.length > 200 ? `${desc.substring(0, 200)}...` : desc;
-                      })()}</p>
+                      {/* Slug + Created At */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 mt-2 text-xs md:text-sm text-[#888888]">
+                        <span className="max-w-[60%] truncate">
+                          <span className="font-semibold text-[#012A50]">Slug: </span>
+                          {blogItem.translations?.en?.slug || "N/A"}
+                        </span>
+                        <span className="whitespace-nowrap">
+                          <span className="font-semibold text-[#012A50]">Created: </span>
+                          {blogItem.createdAt
+                            ? new Date(blogItem.createdAt).toLocaleDateString()
+                            : "N/A"}
+                        </span>
+                      </div>
+                      {/* Short Description */}
+                      <p className="font-plusjakarta font-normal text-base lg:text-lg text-[#666666] mt-2 flex-1 overflow-hidden line-clamp-3">
+                        {(() => {
+                          const desc = blogItem.translations?.en?.shortDescription || 'No description available';
+                          return desc.length > 200 ? `${desc.substring(0, 200)}...` : desc;
+                        })()}
+                      </p>
                       <div className="flex items-center justify-center gap-2 mt-3">
                         <button
                           onClick={(e) => {
