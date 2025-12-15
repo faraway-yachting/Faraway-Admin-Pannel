@@ -6,6 +6,7 @@ import { getBackendUrl } from "@/lib/env";
 const API_URL = getBackendUrl();
 
 export interface BlogTranslation {
+  slug?: string;
   title?: string;
   shortDescription?: string;
   detailDescription?: string;

@@ -95,7 +95,7 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
     enableReinitialize: true,
     initialValues: {
       title: currentBlog?.translations?.en?.title || "",
-      slug: currentBlog?.slug || "",
+      slug: currentBlog?.translations?.en?.slug || "",
       shortDescription: currentBlog?.translations?.en?.shortDescription || "",
       detailDescription: currentBlog?.translations?.en?.detailDescription || "",
       image: currentBlog?.image || "",
@@ -183,7 +183,7 @@ const BlogUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
       formik.resetForm({
         values: {
           title: currentBlog.translations?.en?.title || "",
-          slug: currentBlog.slug || "",
+          slug: currentBlog.translations?.en?.slug || "",
           shortDescription: currentBlog.translations?.en?.shortDescription || "",
           detailDescription: currentBlog.translations?.en?.detailDescription || "",
           image: currentBlog.image || "",
