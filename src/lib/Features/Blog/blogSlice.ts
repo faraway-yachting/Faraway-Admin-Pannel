@@ -509,11 +509,13 @@ const blogSlice = createSlice({
         state.error = null;
         // Update currentBlog with the updated blog data
         state.currentBlog = action.payload;
-        // Update the blog in the blogs array if it exists
-        if (state.blogs && action.payload._id) {
-          const index = state.blogs.findIndex(blog => blog._id === action.payload._id);
+        // Update the blog in the allBlogs array if it exists
+        if (action.payload._id) {
+          const index = state.allBlogs.findIndex(
+            (blog) => blog._id === action.payload._id
+          );
           if (index !== -1) {
-            state.blogs[index] = action.payload;
+            state.allBlogs[index] = action.payload;
           }
         }
       })
