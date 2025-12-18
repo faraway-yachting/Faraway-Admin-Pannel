@@ -150,7 +150,70 @@ export const addYachts = createAsyncThunk<
   async (credentials, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post(`${API_URL}/yacht/add-yacht`, credentials, {
+      const formData = new FormData();
+
+      const translations = {
+        en: {
+          slug: credentials.slug?.trim(),
+          title: credentials.title?.trim(),
+          dayCharter: credentials.dayCharter?.trim() || "",
+          overnightCharter: credentials.overnightCharter?.trim() || "",
+          aboutThisBoat: credentials.aboutThisBoat?.trim() || "",
+          specifications: credentials.specifications?.trim() || "",
+          boatLayout: credentials.boatLayout?.trim() || "",
+          tags: credentials.tags || [],
+        },
+      };
+
+      formData.append("translations", JSON.stringify(translations));
+
+      const entries: Record<string, unknown> = {
+        boatType: credentials.boatType,
+        price: credentials.price,
+        capacity: credentials.capacity,
+        length: credentials.length,
+        lengthRange: credentials.lengthRange,
+        cabins: credentials.cabins,
+        bathrooms: credentials.bathrooms,
+        passengerDayTrip: credentials.passengerDayTrip,
+        passengerOvernight: credentials.passengerOvernight,
+        guests: credentials.guests,
+        guestsRange: credentials.guestsRange,
+        dayTripPrice: credentials.dayTripPrice,
+        overnightPrice: credentials.overnightPrice,
+        daytripPriceEuro: credentials.daytripPriceEuro,
+        videoLink: credentials.videoLink,
+        badge: credentials.badge,
+        slug: credentials.slug?.trim(),
+        design: credentials.design,
+        built: credentials.built,
+        cruisingSpeed: credentials.cruisingSpeed,
+        lengthOverall: credentials.lengthOverall,
+        fuelCapacity: credentials.fuelCapacity,
+        waterCapacity: credentials.waterCapacity,
+        code: credentials.code,
+        type: credentials.type,
+      };
+
+      Object.entries(entries).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          formData.append(key, String(value));
+        }
+      });
+
+      // Primary image (required)
+      if (credentials.primaryImage) {
+        formData.append("primaryImage", credentials.primaryImage);
+      }
+
+      // Gallery images
+      if (Array.isArray(credentials.galleryImages)) {
+        credentials.galleryImages.forEach((file) => {
+          formData.append("galleryImages", file);
+        });
+      }
+
+      const response = await axios.post(`${API_URL}/yacht/add-yacht`, formData, {
         withCredentials: true,
         headers: {
           Authorization: `Bearer ${token}`,
@@ -244,9 +307,70 @@ export const updateYachts = createAsyncThunk(
     { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
+      const formData = new FormData();
+
+      const translations = {
+        en: {
+          slug: payload.slug?.trim(),
+          title: payload.title?.trim(),
+          dayCharter: payload.dayCharter?.trim() || "",
+          overnightCharter: payload.overnightCharter?.trim() || "",
+          aboutThisBoat: payload.aboutThisBoat?.trim() || "",
+          specifications: payload.specifications?.trim() || "",
+          boatLayout: payload.boatLayout?.trim() || "",
+          tags: payload.tags || [],
+        },
+      };
+
+      formData.append("translations", JSON.stringify(translations));
+
+      const entries: Record<string, unknown> = {
+        boatType: payload.boatType,
+        price: payload.price,
+        capacity: payload.capacity,
+        length: payload.length,
+        lengthRange: payload.lengthRange,
+        cabins: payload.cabins,
+        bathrooms: payload.bathrooms,
+        passengerDayTrip: payload.passengerDayTrip,
+        passengerOvernight: payload.passengerOvernight,
+        guests: payload.guests,
+        guestsRange: payload.guestsRange,
+        dayTripPrice: payload.dayTripPrice,
+        overnightPrice: payload.overnightPrice,
+        daytripPriceEuro: payload.daytripPriceEuro,
+        videoLink: payload.videoLink,
+        badge: payload.badge,
+        slug: payload.slug?.trim(),
+        design: payload.design,
+        built: payload.built,
+        cruisingSpeed: payload.cruisingSpeed,
+        lengthOverall: payload.lengthOverall,
+        fuelCapacity: payload.fuelCapacity,
+        waterCapacity: payload.waterCapacity,
+        code: payload.code,
+        type: payload.type,
+      };
+
+      Object.entries(entries).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+          formData.append(key, String(value));
+        }
+      });
+
+      if (payload.primaryImage) {
+        formData.append("primaryImage", payload.primaryImage);
+      }
+
+      if (Array.isArray(payload.galleryImages)) {
+        payload.galleryImages.forEach((file) => {
+          formData.append("galleryImages", file);
+        });
+      }
+
       const response = await axios.put(
         `${API_URL}/yacht/edit-yacht?id=${yachtsId}`,
-        payload,
+        formData,
         {
           withCredentials: true,
           headers: {
