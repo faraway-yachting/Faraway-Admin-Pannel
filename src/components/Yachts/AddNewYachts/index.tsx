@@ -159,6 +159,7 @@ const AddNewYachts: React.FC = () => {
       "Tags": [] as string[],
       Code: "",
       "Yacht Type": "",
+      "Display Order": 9999, // Default to high number (appears last)
     },
     validationSchema: yachtsvalidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -206,6 +207,7 @@ const AddNewYachts: React.FC = () => {
             Tags: true,
             Code: true,
             "Yacht Type": true,
+            "Display Order": true,
           });
           setSubmitting(false);
           return;
@@ -252,6 +254,7 @@ const AddNewYachts: React.FC = () => {
             waterCapacity: values["Water Capacity"] ?? "",
             code: values["Code"] ?? "",
             type: values["Yacht Type"] ?? "",
+            displayOrder: values["Display Order"] ? Number(values["Display Order"]) : 9999,
           })
         );
         if (addYachts.fulfilled.match(resultAction)) {
@@ -303,7 +306,7 @@ const AddNewYachts: React.FC = () => {
                     formik.values[field.label as keyof typeof formik.values] ??
                     "";
                   const isDropdown = field.type === "dropdown";
-                  const isNumber = ["Length", "Cabins", "Bathrooms", "Passenger Day Trip", "Passenger Overnight", "Guests", "Day Trip Price", "Overnight Price", "Daytrip Price (Euro)", "Built", "Cruising Speed", "Length Overall", "Fuel Capacity", "Water Capacity"].includes(field.label);
+                  const isNumber = ["Length", "Cabins", "Bathrooms", "Passenger Day Trip", "Passenger Overnight", "Guests", "Day Trip Price", "Overnight Price", "Daytrip Price (Euro)", "Built", "Cruising Speed", "Length Overall", "Fuel Capacity", "Water Capacity", "Display Order"].includes(field.label);
                   const isPrimaryUpload = field.label === "Primary Image";
                   const isFileUpload = field.label === "Gallery Images";
                   const isCheckbox = field.type === "checkbox";

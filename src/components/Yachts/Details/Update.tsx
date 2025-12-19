@@ -195,6 +195,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
       Code: yachts?.code || "",
       "Yacht Type": yachts?.type || "",
       "Tags": yachts?.tags || [] as string[],
+      "Display Order": yachts?.displayOrder || 9999,
     },
     validationSchema: yachtsUpdateValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -236,6 +237,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
             Tags: true,
             Code: true,
             "Yacht Type": true,
+            "Display Order": true,
           });
           setSubmitting(false);
           return;
@@ -283,6 +285,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
               code: values["Code"] ?? "",
               type: values["Yacht Type"],
               tags: (values["Tags"] ?? []).filter((t: string | undefined): t is string => typeof t === "string"),
+              displayOrder: values["Display Order"] ? Number(values["Display Order"]) : 9999,
             },
             yachtsId: id.toString(),
           })
@@ -353,6 +356,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
                     "Length Overall",
                     "Fuel Capacity",
                     "Water Capacity",
+                    "Display Order",
                   ].includes(field.label);
                   const isPrimaryUpload = field.label === "Primary Image";
                   const isFileUpload = field.label === "Gallery Images";

@@ -46,6 +46,7 @@ export interface AddYachtsPayload {
   type: string;
   primaryImage: File;
   galleryImages: (File | string)[];
+  displayOrder?: number;
 }
 
 export interface YachtsApiResponse {
@@ -92,6 +93,7 @@ export interface YachtsApiResponse {
   type: string;
   code?: string;
   status: string;
+  displayOrder?: number;
   createdAt: string;
   __v: number;
 }
@@ -193,6 +195,7 @@ export const addYachts = createAsyncThunk<
         waterCapacity: credentials.waterCapacity,
         code: credentials.code,
         type: credentials.type,
+        displayOrder: credentials.displayOrder ?? 9999,
       };
 
       Object.entries(entries).forEach(([key, value]) => {
@@ -350,6 +353,7 @@ export const updateYachts = createAsyncThunk(
         waterCapacity: payload.waterCapacity,
         code: payload.code,
         type: payload.type,
+        displayOrder: payload.displayOrder ?? 9999,
       };
 
       Object.entries(entries).forEach(([key, value]) => {

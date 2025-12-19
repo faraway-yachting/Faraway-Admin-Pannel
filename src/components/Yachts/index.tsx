@@ -39,7 +39,14 @@ const YachtsDetail = () => {
   }, [currentPages, itemsPerPage, dispatch]);
 
 
-  const filteredData = allYachts
+  // Sort yachts by displayOrder (ascending: 1, 2, 3...) to ensure order 1 shows first
+  const sortedYachts = [...allYachts].sort((a, b) => {
+    const orderA = a.displayOrder ?? 9999;
+    const orderB = b.displayOrder ?? 9999;
+    return orderA - orderB; // Ascending order: 1, 2, 3...
+  });
+
+  const filteredData = sortedYachts
     .filter(yachts =>
       yachts?.title?.toLowerCase().includes(searchTerm.toLowerCase())
     )
@@ -243,7 +250,16 @@ const YachtsDetail = () => {
                     />
                   </div>
                   <div className="pt-[4px] border-r border-[#D1D1D1] pr-5 w-[70%]">
-                    <h3 className="font-plusjakarta font-extrabold text-[26px] text-[#0061B1]">{yachtItem.title}</h3>
+                    <div className="flex flex-wrap items-center gap-3 mb-2">
+                      <h3 className="font-plusjakarta font-extrabold text-[26px] text-[#0061B1] flex-1 min-w-0 break-words">{yachtItem.title}</h3>
+                      <span className={`px-3 py-1 text-sm font-semibold rounded-full whitespace-nowrap flex-shrink-0 ${
+                        yachtItem.displayOrder !== undefined && yachtItem.displayOrder !== 9999
+                          ? "bg-[#012A50] text-white"
+                          : "bg-gray-300 text-gray-600"
+                      }`}>
+                        Order: {yachtItem.displayOrder ?? 9999}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-2 mt-[8px]">
                       {Box.map((ft, index) => (
                         <div
