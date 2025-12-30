@@ -222,6 +222,7 @@ export const addYachts = createAsyncThunk<
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
+        timeout: 600000, // 10 minutes
       });
       if (response?.data.error) {
         throw new Error(
@@ -381,6 +382,7 @@ export const updateYachts = createAsyncThunk(
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
+          timeout: 600000, // 10 minutes
         }
       );
       if (response?.data.error) {
