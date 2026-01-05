@@ -17,7 +17,7 @@ const YachtsDetail = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const dispatch = useDispatch<AppDispatch>();
-  const { allYachts, getLoading, totalPages, total } = useSelector((state: RootState) => state.yachts);
+  const { allYachts, getLoading, totalPages, total, error } = useSelector((state: RootState) => state.yachts);
   const [currentPages, setCurrentPages] = useState(1);
   const itemsPerPage = 10;
   const [yachtsToDelete, setYachtsToDelete] = useState<string | null>(null);
@@ -35,8 +35,20 @@ const YachtsDetail = () => {
   }, []);
 
   useEffect(() => {
-    dispatch(getYachts({ page: currentPages, limit: itemsPerPage }));
+    dispatch(getYachts({ page: currentPages, limit: itemsPerPage }))
+      .unwrap()
+      .catch((error) => {
+        console.error('[YachtsDetail] Failed to fetch yachts:', error);
+        toast.error(error?.error?.message || "Failed to load yachts. Please try again.");
+      });
   }, [currentPages, itemsPerPage, dispatch]);
+
+  // Show error toast when error state changes
+  useEffect(() => {
+    if (error && !getLoading) {
+      toast.error(error);
+    }
+  }, [error, getLoading]);
 
 
   // Sort yachts by displayOrder (ascending: 1, 2, 3...) to ensure order 1 shows first
@@ -202,6 +214,17 @@ const YachtsDetail = () => {
           <div className="flex items-center justify-center h-[calc(100vh-14.1rem)]">
             <div className="w-10 h-10 border-3 border-t-transparent border-[#012A50] rounded-full animate-spin" />
           </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-[calc(100vh-14.1rem)] text-lg text-red-600">
+            <p className="mb-2">Error loading yachts</p>
+            <p className="text-sm text-gray-600">{error}</p>
+            <button
+              onClick={() => dispatch(getYachts({ page: currentPages, limit: itemsPerPage }))}
+              className="mt-4 px-4 py-2 bg-[#012A50] text-white rounded-md hover:bg-[#012A50]/90"
+            >
+              Retry
+            </button>
+          </div>
         ) : isFiltering && currentItems.length === 0 ? (
           <div className="flex items-center justify-center h-[calc(100vh-14.1rem)] text-lg text-[#012A50]">
             No data available.
@@ -286,7 +309,7 @@ const YachtsDetail = () => {
                       ))}
                     </div>
                     <div className="flex gap-2 mt-[28px] items-center">
-                      {yachtItem.galleryImages.slice(0, 4).map((sk, index) => (
+                      {(yachtItem.galleryImages || []).slice(0, 4).map((sk, index) => (
                         <div key={index} className="flex items-center relative">
                           <Image
                             src={sk}

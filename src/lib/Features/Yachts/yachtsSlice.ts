@@ -258,6 +258,7 @@ export const getYachts = createAsyncThunk<
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          timeout: 60000, // 60 seconds timeout
         }
       );
       if (response?.data.error) {
@@ -265,9 +266,38 @@ export const getYachts = createAsyncThunk<
           response?.data?.error?.message || "Something went wrong"
         );
       }
-      return response.data.data;
+      // Validate response structure
+      if (!response.data || !response.data.data) {
+        console.error('[getYachts] Invalid response structure:', response.data);
+        throw new Error('Invalid API response structure');
+      }
+
+      const responseData = response.data.data;
+      
+      // Ensure yachts is an array
+      if (!Array.isArray(responseData.yachts)) {
+        console.error('[getYachts] Yachts is not an array:', responseData);
+        throw new Error('Yachts data is not an array');
+      }
+
+      // Log response structure for debugging
+      console.log('[getYachts] API Response:', {
+        hasData: !!responseData,
+        hasYachts: !!responseData.yachts,
+        yachtsCount: responseData.yachts?.length || 0,
+        total: responseData.total,
+        totalPages: responseData.totalPages,
+        currentPage: responseData.page,
+      });
+      
+      return responseData;
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{ message: string }>;
+      console.error('[getYachts] Error:', {
+        message: axiosError.message,
+        response: axiosError.response?.data,
+        code: axiosError.code,
+      });
       const message =
         axiosError.response?.data?.message ||
         axiosError.message ||
