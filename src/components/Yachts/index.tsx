@@ -52,7 +52,7 @@ const YachtsDetail = () => {
 
 
   // Sort yachts by displayOrder (ascending: 1, 2, 3...) to ensure order 1 shows first
-  const sortedYachts = [...allYachts].sort((a, b) => {
+  const sortedYachts = (Array.isArray(allYachts) && allYachts.length > 0 ? [...allYachts] : []).sort((a, b) => {
     const orderA = a.displayOrder ?? 9999;
     const orderB = b.displayOrder ?? 9999;
     return orderA - orderB; // Ascending order: 1, 2, 3...
@@ -61,7 +61,7 @@ const YachtsDetail = () => {
   const filteredData = sortedYachts
     .filter(yachts =>
       yachts?.title?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    );
   const isFiltering = searchTerm.trim() !== '';
   const currentItems = filteredData;
 
@@ -229,7 +229,7 @@ const YachtsDetail = () => {
           <div className="flex items-center justify-center h-[calc(100vh-14.1rem)] text-lg text-[#012A50]">
             No data available.
           </div>
-        ) : allYachts?.length > 0 ? (
+        ) : (allYachts && allYachts.length > 0) || (currentItems && currentItems.length > 0) ? (
           <div className="grid grid-cols-1 gap-3 mt-[12px]">
             {currentItems.map((yachtItem, yachtIndex) => {
               const Box = [

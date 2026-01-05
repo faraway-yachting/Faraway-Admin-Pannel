@@ -111,7 +111,8 @@ interface YachtsResponse {
   yachts: YachtsApiResponse[];
   total: number;
   totalPages: number;
-  currentPage: number;
+  currentPage?: number;
+  page?: number; // Backend returns 'page' not 'currentPage'
 }
 
 interface YachtsState {
@@ -258,7 +259,6 @@ export const getYachts = createAsyncThunk<
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          timeout: 60000, // 60 seconds timeout
         }
       );
       if (response?.data.error) {
@@ -266,38 +266,9 @@ export const getYachts = createAsyncThunk<
           response?.data?.error?.message || "Something went wrong"
         );
       }
-      // Validate response structure
-      if (!response.data || !response.data.data) {
-        console.error('[getYachts] Invalid response structure:', response.data);
-        throw new Error('Invalid API response structure');
-      }
-
-      const responseData = response.data.data;
-      
-      // Ensure yachts is an array
-      if (!Array.isArray(responseData.yachts)) {
-        console.error('[getYachts] Yachts is not an array:', responseData);
-        throw new Error('Yachts data is not an array');
-      }
-
-      // Log response structure for debugging
-      console.log('[getYachts] API Response:', {
-        hasData: !!responseData,
-        hasYachts: !!responseData.yachts,
-        yachtsCount: responseData.yachts?.length || 0,
-        total: responseData.total,
-        totalPages: responseData.totalPages,
-        currentPage: responseData.page,
-      });
-      
-      return responseData;
+      return response.data.data;
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{ message: string }>;
-      console.error('[getYachts] Error:', {
-        message: axiosError.message,
-        response: axiosError.response?.data,
-        code: axiosError.code,
-      });
       const message =
         axiosError.response?.data?.message ||
         axiosError.message ||
@@ -547,10 +518,11 @@ const yachtsSlice = createSlice({
       })
       .addCase(getYachts.fulfilled, (state, action) => {
         state.getLoading = false;
-        state.allYachts = action.payload.yachts;
-        state.total = action.payload.total;
-        state.totalPages = action.payload.totalPages;
-        state.currentPage = action.payload.currentPage;
+        // Ensure yachts is always an array, handle both 'page' and 'currentPage' from backend
+        state.allYachts = Array.isArray(action.payload.yachts) ? action.payload.yachts : [];
+        state.total = action.payload.total || 0;
+        state.totalPages = action.payload.totalPages || 0;
+        state.currentPage = action.payload.page || action.payload.currentPage || 1;
         state.error = null;
       })
       .addCase(getYachts.rejected, (state, action) => {
