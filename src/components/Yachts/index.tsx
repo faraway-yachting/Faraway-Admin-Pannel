@@ -50,9 +50,9 @@ const YachtsDetail = () => {
     }
   }, [error, getLoading]);
 
-
   // Sort yachts by displayOrder (ascending: 1, 2, 3...) to ensure order 1 shows first
-  const sortedYachts = (Array.isArray(allYachts) && allYachts.length > 0 ? [...allYachts] : []).sort((a, b) => {
+  // Always create array from allYachts, even if empty, to prevent crashes
+  const sortedYachts = (Array.isArray(allYachts) ? [...allYachts] : []).sort((a, b) => {
     const orderA = a.displayOrder ?? 9999;
     const orderB = b.displayOrder ?? 9999;
     return orderA - orderB; // Ascending order: 1, 2, 3...
@@ -64,6 +64,22 @@ const YachtsDetail = () => {
     );
   const isFiltering = searchTerm.trim() !== '';
   const currentItems = filteredData;
+
+  // Debug logging for Vercel - moved after variable declarations
+  useEffect(() => {
+    console.log('[YachtsDetail] State Debug:', {
+      allYachts: allYachts,
+      allYachtsLength: allYachts?.length,
+      allYachtsIsArray: Array.isArray(allYachts),
+      sortedYachtsLength: sortedYachts.length,
+      currentItemsLength: currentItems.length,
+      getLoading,
+      error,
+      total,
+      totalPages,
+      currentPages,
+    });
+  }, [allYachts, sortedYachts, currentItems, getLoading, error, total, totalPages, currentPages]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -229,9 +245,9 @@ const YachtsDetail = () => {
           <div className="flex items-center justify-center h-[calc(100vh-14.1rem)] text-lg text-[#012A50]">
             No data available.
           </div>
-        ) : (allYachts && allYachts.length > 0) || (currentItems && currentItems.length > 0) ? (
+        ) : (Array.isArray(allYachts) && allYachts.length > 0) || (Array.isArray(currentItems) && currentItems.length > 0) ? (
           <div className="grid grid-cols-1 gap-3 mt-[12px]">
-            {currentItems.map((yachtItem, yachtIndex) => {
+            {(currentItems.length > 0 ? currentItems : sortedYachts.length > 0 ? sortedYachts : allYachts).map((yachtItem, yachtIndex) => {
               const Box = [
                 {
                   id: 1,

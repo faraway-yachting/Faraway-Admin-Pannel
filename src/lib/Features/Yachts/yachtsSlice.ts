@@ -519,11 +519,25 @@ const yachtsSlice = createSlice({
       .addCase(getYachts.fulfilled, (state, action) => {
         state.getLoading = false;
         // Ensure yachts is always an array, handle both 'page' and 'currentPage' from backend
-        state.allYachts = Array.isArray(action.payload.yachts) ? action.payload.yachts : [];
+        const yachts = Array.isArray(action.payload.yachts) ? action.payload.yachts : [];
+        console.log('[yachtsSlice] getYachts.fulfilled:', {
+          yachtsCount: yachts.length,
+          total: action.payload.total,
+          totalPages: action.payload.totalPages,
+          page: action.payload.page,
+          currentPage: action.payload.currentPage,
+          payloadKeys: Object.keys(action.payload),
+        });
+        state.allYachts = yachts;
         state.total = action.payload.total || 0;
         state.totalPages = action.payload.totalPages || 0;
         state.currentPage = action.payload.page || action.payload.currentPage || 1;
         state.error = null;
+        console.log('[yachtsSlice] State after update:', {
+          allYachtsLength: state.allYachts.length,
+          total: state.total,
+          totalPages: state.totalPages,
+        });
       })
       .addCase(getYachts.rejected, (state, action) => {
         state.getLoading = false;
