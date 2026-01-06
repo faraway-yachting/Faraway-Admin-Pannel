@@ -49,6 +49,17 @@ export interface AddYachtsPayload {
   displayOrder?: number;
 }
 
+export interface YachtTranslation {
+  slug: string;
+  title: string;
+  dayCharter?: string;
+  overnightCharter?: string;
+  aboutThisBoat?: string;
+  specifications?: string;
+  boatLayout?: string;
+  tags?: string[];
+}
+
 export interface YachtsApiResponse {
   _id: string;
   boatType: string;
@@ -96,6 +107,15 @@ export interface YachtsApiResponse {
   displayOrder?: number;
   createdAt: string;
   __v: number;
+  translations?: {
+    en?: YachtTranslation;
+    fr?: YachtTranslation;
+    de?: YachtTranslation;
+    ru?: YachtTranslation;
+    zh?: YachtTranslation;
+    th?: YachtTranslation;
+    ar?: YachtTranslation;
+  };
 }
 
 export interface Yachts extends YachtsApiResponse {
@@ -200,7 +220,8 @@ export const addYachts = createAsyncThunk<
       };
 
       Object.entries(entries).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
+        // Send empty strings to preserve them in the database
+        if (value !== undefined && value !== null) {
           formData.append(key, String(value));
         }
       });
@@ -359,7 +380,8 @@ export const updateYachts = createAsyncThunk(
       };
 
       Object.entries(entries).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== "") {
+        // Send empty strings to preserve them in the database
+        if (value !== undefined && value !== null) {
           formData.append(key, String(value));
         }
       });
