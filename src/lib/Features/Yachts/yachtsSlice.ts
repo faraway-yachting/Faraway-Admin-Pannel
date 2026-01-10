@@ -405,7 +405,7 @@ export const updateYachts = createAsyncThunk(
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
-          timeout: 420000, // 7 minutes (allows time for large image uploads, translations are async/non-blocking)
+          timeout: 1200000, // 20 minutes (same as add - allows time for translations ~5min + image uploads + processing)
         }
       );
       if (response?.data.error) {
