@@ -44,7 +44,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
   
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { yachts, loading } = useSelector((state: RootState) => state.yachts);
+  const { yachts, loading: getLoading, updateLoading } = useSelector((state: RootState) => state.yachts);
   const { allTags } = useSelector((state: RootState) => state.tags);
 
   useEffect(() => {
@@ -316,8 +316,31 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
     return formik.touched[fieldName] && formik.errors[fieldName];
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <>
+      {updateLoading && (
+        <div 
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-50 bg-[#012A50] text-white px-4 py-3 rounded-lg shadow-lg cursor-pointer hover:bg-[#001B48] transition-all flex items-center gap-3 min-w-[200px]"
+        >
+          <div className="relative w-6 h-6 flex-shrink-0">
+            <div className="absolute inset-0 border-2 border-white/30 rounded-full"></div>
+            <div className="absolute inset-0 border-2 border-transparent border-t-white rounded-full animate-spin"></div>
+          </div>
+          <div className="flex flex-col flex-1 min-w-0">
+            <div className="text-white font-medium text-sm whitespace-nowrap">
+              Updating yacht...
+            </div>
+            <div className="text-white/80 text-xs">
+              Click to scroll to top
+            </div>
+          </div>
+        </div>
+      )}
       <form onSubmit={formik.handleSubmit} className="mt-4">
         {NewYachtsData.map((section, sectionIndex) => {
           return (
@@ -843,13 +866,19 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
           </button>
           <button
             type="submit"
-            disabled={loading}
+            disabled={updateLoading}
             className={`rounded-full px-[16px] py-[8px] bg-[#001B48] hover:bg-[#222222] text-white flex items-center justify-center gap-2 font-medium ${
-              loading ? "cursor-not-allowed" : "cursor-pointer"
+              updateLoading ? "cursor-not-allowed" : "cursor-pointer"
             }`}
           >
-            {loading ? (
-              "Save ..."
+            {updateLoading ? (
+              <>
+                <div className="relative w-4 h-4 flex-shrink-0">
+                  <div className="absolute inset-0 border-2 border-white/30 rounded-full"></div>
+                  <div className="absolute inset-0 border-2 border-transparent border-t-white rounded-full animate-spin"></div>
+                </div>
+                Saving...
+              </>
             ) : (
               <>
                 <Tick /> Save

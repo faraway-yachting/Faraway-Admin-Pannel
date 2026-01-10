@@ -141,6 +141,7 @@ interface YachtsState {
   allYachts: YachtsApiResponse[];
   error: string | null;
   addLoading: boolean;
+  updateLoading: boolean;
   total: number;
   totalPages: number;
   currentPage: number;
@@ -155,6 +156,7 @@ const initialState: YachtsState = {
   allYachts: [],
   error: null,
   addLoading: false,
+  updateLoading: false,
   total: 0,
   totalPages: 0,
   currentPage: 1,
@@ -584,16 +586,16 @@ const yachtsSlice = createSlice({
       })
       // Update Yacht
       .addCase(updateYachts.pending, (state) => {
-        state.loading = true;
+        state.updateLoading = true;
         state.error = null;
       })
       .addCase(updateYachts.fulfilled, (state, action) => {
-        state.loading = false;
+        state.updateLoading = false;
         state.yachts = action.payload;
         state.error = null;
       })
       .addCase(updateYachts.rejected, (state, action) => {
-        state.loading = false;
+        state.updateLoading = false;
         const payload = action.payload as { error: { message: string } };
         state.error = payload?.error?.message || "Failed to update yacht.";
       })
