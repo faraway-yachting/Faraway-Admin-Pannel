@@ -44,7 +44,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
   
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { yachts, loading: getLoading, updateLoading } = useSelector((state: RootState) => state.yachts);
+  const { yachts, updateLoading } = useSelector((state: RootState) => state.yachts);
   const { allTags } = useSelector((state: RootState) => state.tags);
 
   useEffect(() => {
