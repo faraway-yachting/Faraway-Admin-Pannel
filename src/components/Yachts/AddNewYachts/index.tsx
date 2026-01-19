@@ -159,6 +159,7 @@ const AddNewYachts: React.FC = () => {
       "Tags": [] as string[],
       Code: "",
       "Yacht Type": "",
+      "Display Order": 9999, // Default to high number (appears last)
     },
     validationSchema: yachtsvalidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -206,6 +207,7 @@ const AddNewYachts: React.FC = () => {
             Tags: true,
             Code: true,
             "Yacht Type": true,
+            "Display Order": true,
           });
           setSubmitting(false);
           return;
@@ -252,6 +254,7 @@ const AddNewYachts: React.FC = () => {
             waterCapacity: values["Water Capacity"] ?? "",
             code: values["Code"] ?? "",
             type: values["Yacht Type"] ?? "",
+            displayOrder: values["Display Order"] ? Number(values["Display Order"]) : 9999,
           })
         );
         if (addYachts.fulfilled.match(resultAction)) {
@@ -280,10 +283,33 @@ const AddNewYachts: React.FC = () => {
     return formik.touched[fieldName] && formik.errors[fieldName];
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <>
+      {loading && (
+        <div 
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-50 bg-[#012A50] text-white px-4 py-3 rounded-lg shadow-lg cursor-pointer hover:bg-[#001B48] transition-all flex items-center gap-3 min-w-[200px]"
+        >
+          <div className="relative w-6 h-6 flex-shrink-0">
+            <div className="absolute inset-0 border-2 border-white/30 rounded-full"></div>
+            <div className="absolute inset-0 border-2 border-transparent border-t-white rounded-full animate-spin"></div>
+          </div>
+          <div className="flex flex-col flex-1 min-w-0">
+            <div className="text-white font-medium text-sm whitespace-nowrap">
+              Creating yacht...
+            </div>
+            <div className="text-white/80 text-xs">
+              Click to scroll to top
+            </div>
+          </div>
+        </div>
+      )}
       <form onSubmit={formik.handleSubmit}>
-        {NewYachtsData.map((section, sectionIndex) => {
+          {NewYachtsData.map((section, sectionIndex) => {
           return (
             <div key={sectionIndex}>
               {section.section && (
@@ -303,13 +329,23 @@ const AddNewYachts: React.FC = () => {
                     formik.values[field.label as keyof typeof formik.values] ??
                     "";
                   const isDropdown = field.type === "dropdown";
-                  const isNumber = ["Length", "Cabins", "Bathrooms", "Passenger Day Trip", "Passenger Overnight", "Guests", "Day Trip Price", "Overnight Price", "Daytrip Price (Euro)", "Built", "Cruising Speed", "Length Overall", "Fuel Capacity", "Water Capacity"].includes(field.label);
+                  const isNumber = ["Length", "Cabins", "Bathrooms", "Passenger Day Trip", "Passenger Overnight", "Guests", "Day Trip Price", "Overnight Price", "Daytrip Price (Euro)", "Built", "Cruising Speed", "Length Overall", "Fuel Capacity", "Water Capacity", "Display Order"].includes(field.label);
                   const isPrimaryUpload = field.label === "Primary Image";
                   const isFileUpload = field.label === "Gallery Images";
                   const isCheckbox = field.type === "checkbox";
                   const isTag = field.label === "Tags";
                   const fieldName = field.label as keyof FormYachtsValues;
                   const fieldError = getFieldError(fieldName);
+                  
+                  // Helper to safely get tags array
+                  const getSelectedTags = (): string[] => {
+                    if (!isTag) return [];
+                    const fieldValue = formik.values[fieldName];
+                    if (!fieldValue) return [];
+                    return Array.isArray(fieldValue) ? fieldValue.filter((v): v is string => typeof v === 'string') : [];
+                  };
+                  const selectedTags = getSelectedTags();
+                  
                   if (isCheckbox) {
                     return (
                       <div
@@ -390,9 +426,9 @@ const AddNewYachts: React.FC = () => {
                                 onClick={() => setIsTagsOpen(!isTagsOpen)}
                                 className="w-full rounded-md cursor-pointer flex items-center justify-between"
                               >
-                                <span className={Array.isArray(formik.values[fieldName]) && formik.values[fieldName].length > 0 ? "text-[#222222]" : "text-[#999999]"}>
-                                  {Array.isArray(formik.values[fieldName]) && formik.values[fieldName].length > 0 
-                                    ? `${formik.values[fieldName].length} tags selected`
+                                <span className={selectedTags.length > 0 ? "text-[#222222]" : "text-[#999999]"}>
+                                  {selectedTags.length > 0 
+                                    ? `${selectedTags.length} tags selected`
                                     : "Select tags"
                                   }
                                 </span>
@@ -401,35 +437,36 @@ const AddNewYachts: React.FC = () => {
                               {isTagsOpen && (
                                 <div className="absolute top-full left-0 scrollbar-thick right-0 z-10 mt-1 max-h-[200px] overflow-y-auto border hover:text-white border-gray-300 rounded-md bg-white shadow-lg">
                                   {allTags && allTags.length > 0 ? (
-                                    allTags.map((tag) => (
-                                      <label
-                                        key={tag._id}
-                                        onClick={() => {
-                                          const currentValues = Array.isArray(formik.values[fieldName]) ? formik.values[fieldName] : [];
-                                          const isSelected = currentValues.includes(tag.Name);
-                                          let newValues;
-                                          if (isSelected) {
-                                            newValues = currentValues.filter(value => value !== tag.Name);
-                                          } else {
-                                            newValues = [...currentValues, tag.Name];
-                                          }
-                                          formik.setFieldValue(fieldName, newValues);
-                                          formik.setFieldTouched(fieldName, true, false);
-                                        }}
-                                        className={`flex items-center justify-between px-3 py-2 cursor-pointer hover:text-white hover:bg-[#1967D2] ${
-                                          Array.isArray(formik.values[fieldName]) && formik.values[fieldName].includes(tag.Name)
-                                            ? "bg-blue-50"
-                                            : ""
-                                        }`}
-                                      >
-                                        <span className="text-sm text-[#222222] hover:text-white">{tag.Name}</span>
-                                        {Array.isArray(formik.values[fieldName]) && formik.values[fieldName].includes(tag.Name) && (
-                                          <span className="text-[#222222]">
-                                            <Tick />
-                                          </span>
-                                        )}
-                                      </label>
-                                    ))
+                                    allTags.map((tag) => {
+                                      const isSelected = selectedTags.includes(tag.Name);
+                                      return (
+                                        <label
+                                          key={tag._id}
+                                          onClick={() => {
+                                            let newValues: string[];
+                                            if (isSelected) {
+                                              newValues = selectedTags.filter(value => value !== tag.Name);
+                                            } else {
+                                              newValues = [...selectedTags, tag.Name];
+                                            }
+                                            formik.setFieldValue(fieldName, newValues);
+                                            formik.setFieldTouched(fieldName, true, false);
+                                          }}
+                                          className={`flex items-center justify-between px-3 py-2 cursor-pointer hover:text-white hover:bg-[#1967D2] ${
+                                            isSelected
+                                              ? "bg-blue-50"
+                                              : ""
+                                          }`}
+                                        >
+                                          <span className="text-sm text-[#222222] hover:text-white">{tag.Name}</span>
+                                          {isSelected && (
+                                            <span className="text-[#222222]">
+                                              <Tick />
+                                            </span>
+                                          )}
+                                        </label>
+                                      );
+                                    })
                                   ) : (
                                     <div className="px-3 py-2 text-[#999999] text-sm">
                                       No Tags Available
@@ -440,16 +477,18 @@ const AddNewYachts: React.FC = () => {
                               <input
                                 type="hidden"
                                 name={fieldName}
-                                value={Array.isArray(formik.values[fieldName]) ? formik.values[fieldName].join(",") : ""}
+                                value={selectedTags.join(",")}
                               />
                             </div>
                           </div>
-                          {fieldError && (
-                            <p className="text-[#DB2828] text-sm mt-1">
-                              {typeof formik.errors[fieldName] === "string" &&
-                                formik.errors[fieldName]}
-                            </p>
-                          )}
+                          {fieldError && (() => {
+                            const errorMessage = formik.errors[fieldName];
+                            return typeof errorMessage === "string" ? (
+                              <p className="text-[#DB2828] text-sm mt-1">
+                                {errorMessage}
+                              </p>
+                            ) : null;
+                          })()}
                         </>
                       ) : isDropdown ? (
                         <>
@@ -482,12 +521,14 @@ const AddNewYachts: React.FC = () => {
                               ))}
                             </select>
                           </div>
-                          {fieldError && (
-                            <p className="text-[#DB2828] text-sm mt-1">
-                              {typeof formik.errors[fieldName] === "string" &&
-                                formik.errors[fieldName]}
-                            </p>
-                          )}
+                          {fieldError && (() => {
+                            const errorMessage = formik.errors[fieldName];
+                            return typeof errorMessage === "string" ? (
+                              <p className="text-[#DB2828] text-sm mt-1">
+                                {errorMessage}
+                              </p>
+                            ) : null;
+                          })()}
                         </>
                       ) : isPrimaryUpload ? (
                         <>
@@ -530,12 +571,14 @@ const AddNewYachts: React.FC = () => {
                               </>
                             )}
                           </div>
-                          {fieldError && (
-                            <p className="text-[#DB2828] text-sm mt-1">
-                              {typeof formik.errors[fieldName] === "string" &&
-                                formik.errors[fieldName]}
-                            </p>
-                          )}
+                          {fieldError && (() => {
+                            const errorMessage = formik.errors[fieldName];
+                            return typeof errorMessage === "string" ? (
+                              <p className="text-[#DB2828] text-sm mt-1">
+                                {errorMessage}
+                              </p>
+                            ) : null;
+                          })()}
                         </>
                       ) : isFileUpload ? (
                         <>
@@ -636,12 +679,14 @@ const AddNewYachts: React.FC = () => {
                                 )}
                             </div>
                           </div>
-                          {fieldError && (
-                            <p className="text-[#DB2828] text-sm mt-1">
-                              {typeof formik.errors[fieldName] === "string" &&
-                                formik.errors[fieldName]}
-                            </p>
-                          )}
+                          {fieldError && (() => {
+                            const errorMessage = formik.errors[fieldName];
+                            return typeof errorMessage === "string" ? (
+                              <p className="text-[#DB2828] text-sm mt-1">
+                                {errorMessage}
+                              </p>
+                            ) : null;
+                          })()}
                         </>
                       ) : isNumber ? (
                         <>
@@ -650,9 +695,13 @@ const AddNewYachts: React.FC = () => {
                             name={fieldName}
                             placeholder={field.placeholder}
                             value={
-                              typeof formik.values[fieldName] === "string" || typeof formik.values[fieldName] === "number"
-                                ? formik.values[fieldName]
-                                : ""
+                              (() => {
+                                const fieldValue = formik.values[fieldName];
+                                if (fieldValue === null || fieldValue === undefined) return "";
+                                return typeof fieldValue === "string" || typeof fieldValue === "number"
+                                  ? fieldValue
+                                  : "";
+                              })()
                             }
                             onChange={(e) => {
                               formik.handleChange(e);
@@ -668,12 +717,14 @@ const AddNewYachts: React.FC = () => {
                               }
                             }}
                           />
-                          {fieldError && (
-                            <p className="text-[#DB2828] text-sm mt-1">
-                              {typeof formik.errors[fieldName] === "string" &&
-                                formik.errors[fieldName]}
-                            </p>
-                          )}
+                          {fieldError && (() => {
+                            const errorMessage = formik.errors[fieldName];
+                            return typeof errorMessage === "string" ? (
+                              <p className="text-[#DB2828] text-sm mt-1">
+                                {errorMessage}
+                              </p>
+                            ) : null;
+                          })()}
                         </>
                       ) : (
                         <>
@@ -690,12 +741,14 @@ const AddNewYachts: React.FC = () => {
                             className={`placeholder:text-[#999999] outline-none text-[#222222] w-full bg-[#F0F2F4] rounded-lg px-3 py-2  ${fieldError ? "border border-[#DB2828]" : ""
                               }`}
                           />
-                          {fieldError && (
-                            <p className="text-[#DB2828] text-sm mt-1">
-                              {typeof formik.errors[fieldName] === "string" &&
-                                formik.errors[fieldName]}
-                            </p>
-                          )}
+                          {fieldError && (() => {
+                            const errorMessage = formik.errors[fieldName];
+                            return typeof errorMessage === "string" ? (
+                              <p className="text-[#DB2828] text-sm mt-1">
+                                {errorMessage}
+                              </p>
+                            ) : null;
+                          })()}
                         </>
                       )}
                     </div>
@@ -726,10 +779,23 @@ const AddNewYachts: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`rounded-full px-[16px] py-[8px] bg-[#001B48] hover:bg-[#222222] text-white flex items-center justify-center gap-2 font-medium ${loading ? "cursor-not-allowed" : "cursor-pointer"
-              }`}
+            className={`rounded-full px-[16px] py-[8px] bg-[#001B48] hover:bg-[#222222] text-white flex items-center justify-center gap-2 font-medium transition-all ${
+              loading 
+                ? "cursor-not-allowed opacity-75" 
+                : "cursor-pointer hover:scale-105 active:scale-95"
+            }`}
           >
-            {loading ? "Save ..." : <><Tick /> Save</>}
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>Translating & Saving...</span>
+              </>
+            ) : (
+              <>
+                <Tick /> 
+                <span>Save</span>
+              </>
+            )}
           </button>
         </div>
       </form>

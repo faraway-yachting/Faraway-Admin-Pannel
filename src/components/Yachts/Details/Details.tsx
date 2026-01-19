@@ -28,7 +28,7 @@ const Yachts: React.FC<CustomersProps> = ({ goToNextTab }) => {
     const GeneralInfoData = [
         {
             array: [
-                { label: "Title", data: yachts?.title || "N/A" },
+                { label: "Title", data: yachts?.translations?.en?.title || yachts?.title || "N/A" },
                 { label: "Boat Type", data: yachts?.boatType || "N/A" },
                 { label: "Yacht Type", data: yachts?.type || "N/A" },
                 { label: "Category", data: yachts?.price || "N/A" },
@@ -82,56 +82,65 @@ const Yachts: React.FC<CustomersProps> = ({ goToNextTab }) => {
                     <div className="mt-4">
                         <h2 className="font-bold text-[#222222] mb-4">Tags</h2>
                         <div className="space-y-2">
-                            {yachts?.tags?.map((tag) => (
-                                <div key={tag} className="flex items-center">
-                                    <span className="text-[#222222] mr-2">•</span>
-                                    <span className="text-[#222222] font-medium text-[14px]">{tag}</span>
-                                </div>
-                            ))}
+                            {(() => {
+                                console.log(yachts?.translations);
+                                const tags = yachts?.translations?.en?.tags ?? [];
+                                const tagsArray = Array.isArray(tags) ? tags : [];
+                                return tagsArray.length > 0 ? (
+                                    tagsArray.map((tag: string, index: number) => (
+                                        <div key={tag || index} className="flex items-center">
+                                            <span className="text-[#222222] mr-2">•</span>
+                                            <span className="text-[#222222] font-medium text-[14px]">{tag}</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <span className="text-[#999999] text-sm">No tags available</span>
+                                );
+                            })()}
                         </div>
                     </div>
-                    {yachts?.dayCharter?.trim() && (
+                    {(yachts?.translations?.en?.dayCharter || yachts?.dayCharter)?.trim() && (
                         <div className="mt-4">
                             <h2 className="font-bold text-[#222222] mb-4">Day Charter</h2>
                             <div
                                 className="prose max-w-full"
-                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(yachts.dayCharter || "") }}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(yachts?.translations?.en?.dayCharter || yachts?.dayCharter || "") }}
                             />
                         </div>
                     )}
-                    {yachts?.overnightCharter?.trim() && (
+                    {(yachts?.translations?.en?.overnightCharter || yachts?.overnightCharter)?.trim() && (
                         <div className="mt-4">
                             <h2 className="font-bold text-[#222222] mb-4">Overnight Charter</h2>
                             <div
                                 className="prose max-w-full"
-                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(yachts.overnightCharter || "") }}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(yachts?.translations?.en?.overnightCharter || yachts?.overnightCharter || "") }}
                             />
                         </div>
                     )}
-                    {yachts?.aboutThisBoat?.trim() && (
+                    {(yachts?.translations?.en?.aboutThisBoat || yachts?.aboutThisBoat)?.trim() && (
                         <div className="mt-4">
                             <h2 className="font-bold text-[#222222] mb-4">About this Boat</h2>
                             <div
                                 className="prose max-w-full"
-                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(yachts.aboutThisBoat || "") }}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(yachts?.translations?.en?.aboutThisBoat || yachts?.aboutThisBoat || "") }}
                             />
                         </div>
                     )}
-                    {yachts?.specifications?.trim() && (
+                    {(yachts?.translations?.en?.specifications || yachts?.specifications)?.trim() && (
                         <div className="mt-4">
                             <h2 className="font-bold text-[#222222] mb-4">Specifications</h2>
                             <div
                                 className="prose max-w-full"
-                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(yachts.specifications || "") }}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(yachts?.translations?.en?.specifications || yachts?.specifications || "") }}
                             />
                         </div>
                     )}
-                    {yachts?.boatLayout?.trim() && (
+                    {(yachts?.translations?.en?.boatLayout || yachts?.boatLayout)?.trim() && (
                         <div className="mt-4">
                             <h2 className="font-bold text-[#222222] mb-4">Boat Layout</h2>
                             <div
                                 className="prose max-w-full"
-                                dangerouslySetInnerHTML={{ __html: yachts.boatLayout }}
+                                dangerouslySetInnerHTML={{ __html: yachts?.translations?.en?.boatLayout || yachts?.boatLayout || "" }}
                             />
                         </div>
                     )}

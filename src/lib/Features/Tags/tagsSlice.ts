@@ -1,12 +1,15 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios, { AxiosError } from "axios";
+import { getBackendUrl } from "@/lib/env";
+
+// Get API URL from env utility (handles both NEXT_PUBLIC_BACKEND_URL and BACKEND_URL)
+const API_URL = getBackendUrl();
 
 export interface AddTagsPayload {
   name: string;
   slug: string;
   description: string;
 }
-
 export interface TagsApiResponse {
   _id: string;
   Name: string;
@@ -68,16 +71,12 @@ export const addTags = createAsyncThunk<
   async (credentials, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post(
-        "https://awais.thedevapp.online/tags/add-tag",
-        credentials,
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
-        }
-      );
+      const response = await axios.post(`${API_URL}/tags/add-tag`, credentials, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+      });
       if (response?.data.error) {
         throw new Error(
           response?.data?.error?.message || "Something went wrong"
@@ -105,7 +104,7 @@ export const getTags = createAsyncThunk<
   async (params, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      let queryString = "https://awais.thedevapp.online/tags/all-tags";
+      let queryString = `${API_URL}/tags/all-tags`;
       if (params && (params.page || params.limit)) {
         const queryParams = new URLSearchParams();
         if (params.page) queryParams.append('page', params.page.toString());
@@ -144,15 +143,12 @@ export const getTagsById = createAsyncThunk(
   ) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `https://awais.thedevapp.online/tags/tagByID?id=${tagsId}`,
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(`${API_URL}/tags/tagByID?id=${tagsId}`, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return {
         tags: response.data.data
       };
@@ -174,7 +170,7 @@ export const updateTags = createAsyncThunk(
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        `https://awais.thedevapp.online/tags/edit-tag?id=${tagsId}`,
+        `${API_URL}/tags/edit-tag?id=${tagsId}`,
         payload,
         {
           withCredentials: true,
@@ -212,7 +208,7 @@ export const deleteTags = createAsyncThunk<
     try {
       const token = localStorage.getItem("token");
       const response = await axios.delete(
-        `https://awais.thedevapp.online/tags/delete-tag?id=${id}`,
+        `${API_URL}/tags/delete-tag?id=${id}`,
         {
           withCredentials: true,
           headers: {

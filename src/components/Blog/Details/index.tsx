@@ -29,8 +29,8 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
   const blogInfoData = [
     {
       array: [
-        { label: "Title", data: currentBlog?.title || "N/A" },
-        { label: "Slug", data: currentBlog?.slug || "N/A" },
+        { label: "Title", data: currentBlog?.translations?.en?.title || "N/A" },
+        { label: "Slug", data: currentBlog?.translations?.en?.slug || "N/A" },
         { label: "Status", data: currentBlog?.status || "N/A" },
       ],
       iconone: MdKeyboardArrowLeft,
@@ -105,14 +105,14 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
                   </div>
                 </div>
               )}
-              {currentBlog?.shortDescription?.trim() && (
+              {currentBlog?.translations?.en?.shortDescription?.trim() && (
                 <div className="bg-white shadow-xs rounded-lg px-2 py-2 w-full mb-6">
                   <h2 className="text-[#001B48] font-bold text-[18px] mb-2 pb-2 border-b border-[#CCCCCC]">
                     Short Description
                   </h2>
                   <div className="prose max-w-full">
                     <p className="text-[#222222] font-medium leading-relaxed">
-                      {currentBlog.shortDescription}
+                      {currentBlog.translations?.en?.shortDescription || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -145,7 +145,7 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
       {/* Short Description */}
 
       {/* Detailed Description */}
-      {currentBlog?.detailDescription?.trim() && (
+      {currentBlog?.translations?.en?.detailDescription?.trim() && (
         <div className="bg-white shadow-xs rounded-lg px-2 py-2 w-full mb-6">
           <h2 className="text-[#001B48] font-bold text-[18px] mb-2 pb-2 border-b border-[#CCCCCC]">
             Detailed Description
@@ -153,7 +153,7 @@ const BlogDetails: React.FC<BlogDetailsProps> = ({ id, goToNextTab }) => {
           <div
             className="prose max-w-full"
             dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(currentBlog.detailDescription || ""),
+              __html: DOMPurify.sanitize(currentBlog.translations?.en?.detailDescription || ""),
             }}
           />
         </div>

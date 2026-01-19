@@ -44,7 +44,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
   
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { yachts, loading } = useSelector((state: RootState) => state.yachts);
+  const { yachts, updateLoading } = useSelector((state: RootState) => state.yachts);
   const { allTags } = useSelector((state: RootState) => state.tags);
 
   useEffect(() => {
@@ -162,7 +162,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
     enableReinitialize: true,
     initialValues: {
       "Boat Type": yachts?.boatType || "",
-      Title: yachts?.title || "",
+      Title: yachts?.translations?.en?.title || yachts?.title || "",
       Category: yachts?.price || "",
       Capacity: yachts?.capacity || "",
       Length: yachts?.length || "",
@@ -178,14 +178,14 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
       "Daytrip Price (Euro)": yachts?.daytripPriceEuro || "",
       "Primary Image": yachts?.primaryImage || "",
       "Gallery Images": convertExistingImages(yachts?.galleryImages),
-      "Day Charter": yachts?.dayCharter || "",
-      "Overnight Charter": yachts?.overnightCharter || "",
-      "About this Boat": yachts?.aboutThisBoat || "",
-      Specifications: yachts?.specifications || "",
-      "Boat Layout": yachts?.boatLayout,
+      "Day Charter": yachts?.translations?.en?.dayCharter || yachts?.dayCharter || "",
+      "Overnight Charter": yachts?.translations?.en?.overnightCharter || yachts?.overnightCharter || "",
+      "About this Boat": yachts?.translations?.en?.aboutThisBoat || yachts?.aboutThisBoat || "",
+      Specifications: yachts?.translations?.en?.specifications || yachts?.specifications || "",
+      "Boat Layout": yachts?.translations?.en?.boatLayout || yachts?.boatLayout || "",
       "Video Link": yachts?.videoLink || "",
       Badge: yachts?.badge || "",
-      Slug: yachts?.slug || "",
+      Slug: yachts?.translations?.en?.slug || yachts?.slug || "",
       Design: yachts?.design || "",
       Built: yachts?.built || "",
       "Cruising Speed": yachts?.cruisingSpeed || "",
@@ -194,7 +194,8 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
       "Water Capacity": yachts?.waterCapacity || "",
       Code: yachts?.code || "",
       "Yacht Type": yachts?.type || "",
-      "Tags": yachts?.tags || [] as string[],
+      "Tags": yachts?.translations?.en?.tags || yachts?.tags || [] as string[],
+      "Display Order": yachts?.displayOrder || 9999,
     },
     validationSchema: yachtsUpdateValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -236,6 +237,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
             Tags: true,
             Code: true,
             "Yacht Type": true,
+            "Display Order": true,
           });
           setSubmitting(false);
           return;
@@ -283,6 +285,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
               code: values["Code"] ?? "",
               type: values["Yacht Type"],
               tags: (values["Tags"] ?? []).filter((t: string | undefined): t is string => typeof t === "string"),
+              displayOrder: values["Display Order"] ? Number(values["Display Order"]) : 9999,
             },
             yachtsId: id.toString(),
           })
@@ -313,8 +316,31 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
     return formik.touched[fieldName] && formik.errors[fieldName];
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <>
+      {updateLoading && (
+        <div 
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-50 bg-[#012A50] text-white px-4 py-3 rounded-lg shadow-lg cursor-pointer hover:bg-[#001B48] transition-all flex items-center gap-3 min-w-[200px]"
+        >
+          <div className="relative w-6 h-6 flex-shrink-0">
+            <div className="absolute inset-0 border-2 border-white/30 rounded-full"></div>
+            <div className="absolute inset-0 border-2 border-transparent border-t-white rounded-full animate-spin"></div>
+          </div>
+          <div className="flex flex-col flex-1 min-w-0">
+            <div className="text-white font-medium text-sm whitespace-nowrap">
+              Updating yacht...
+            </div>
+            <div className="text-white/80 text-xs">
+              Click to scroll to top
+            </div>
+          </div>
+        </div>
+      )}
       <form onSubmit={formik.handleSubmit} className="mt-4">
         {NewYachtsData.map((section, sectionIndex) => {
           return (
@@ -353,6 +379,7 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
                     "Length Overall",
                     "Fuel Capacity",
                     "Water Capacity",
+                    "Display Order",
                   ].includes(field.label);
                   const isPrimaryUpload = field.label === "Primary Image";
                   const isFileUpload = field.label === "Gallery Images";
@@ -839,13 +866,19 @@ const YachtsUpdate: React.FC<CustomerProps> = ({ goToPrevTab, id }) => {
           </button>
           <button
             type="submit"
-            disabled={loading}
+            disabled={updateLoading}
             className={`rounded-full px-[16px] py-[8px] bg-[#001B48] hover:bg-[#222222] text-white flex items-center justify-center gap-2 font-medium ${
-              loading ? "cursor-not-allowed" : "cursor-pointer"
+              updateLoading ? "cursor-not-allowed" : "cursor-pointer"
             }`}
           >
-            {loading ? (
-              "Save ..."
+            {updateLoading ? (
+              <>
+                <div className="relative w-4 h-4 flex-shrink-0">
+                  <div className="absolute inset-0 border-2 border-white/30 rounded-full"></div>
+                  <div className="absolute inset-0 border-2 border-transparent border-t-white rounded-full animate-spin"></div>
+                </div>
+                Saving...
+              </>
             ) : (
               <>
                 <Tick /> Save

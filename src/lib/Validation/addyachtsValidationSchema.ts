@@ -39,6 +39,11 @@ export const yachtsvalidationSchema = Yup.object().shape({
   "Yacht Type": Yup.string().required("Yacht Type is required"),
   "Code": Yup.string(),
   "Tags": Yup.array().of(Yup.string()).default([]),
+      "Display Order": Yup.number()
+        .integer("Display Order must be an integer")
+        .min(1, "Display Order must be at least 1")
+        .optional()
+        .default(9999),
   "Primary Image": Yup.mixed<File>()
     .required("Primary Image is required")
     .test("is-file", "Please select a valid file", (value) => {
@@ -112,6 +117,11 @@ export const yachtsUpdateValidationSchema = Yup.object().shape({
   "Yacht Type": Yup.string().required("Yacht Type is required"),
   "Code": Yup.string(),
   "Tags": Yup.array().of(Yup.string()).default([]),
+      "Display Order": Yup.number()
+        .integer("Display Order must be an integer")
+        .min(1, "Display Order must be at least 1")
+        .optional()
+        .default(9999),
   "Primary Image": Yup.mixed<File | string>()
     .required("Primary Image is required")
     .test("is-valid", "Primary Image must be a file or URL", (value) => {

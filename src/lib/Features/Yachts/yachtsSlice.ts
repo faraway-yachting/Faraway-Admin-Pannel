@@ -1,5 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios, { AxiosError } from "axios";
+import { getBackendUrl } from "@/lib/env";
+
+// Get API URL from env utility (handles both NEXT_PUBLIC_BACKEND_URL and BACKEND_URL)
+const API_URL = getBackendUrl();
 
 export interface AddYachtsPayload {
   boatType: string;
@@ -42,6 +46,18 @@ export interface AddYachtsPayload {
   type: string;
   primaryImage: File;
   galleryImages: (File | string)[];
+  displayOrder?: number;
+}
+
+export interface YachtTranslation {
+  slug: string;
+  title: string;
+  dayCharter?: string;
+  overnightCharter?: string;
+  aboutThisBoat?: string;
+  specifications?: string;
+  boatLayout?: string;
+  tags?: string[];
 }
 
 export interface YachtsApiResponse {
@@ -88,8 +104,18 @@ export interface YachtsApiResponse {
   type: string;
   code?: string;
   status: string;
+  displayOrder?: number;
   createdAt: string;
   __v: number;
+  translations?: {
+    en?: YachtTranslation;
+    fr?: YachtTranslation;
+    de?: YachtTranslation;
+    ru?: YachtTranslation;
+    zh?: YachtTranslation;
+    th?: YachtTranslation;
+    ar?: YachtTranslation;
+  };
 }
 
 export interface Yachts extends YachtsApiResponse {
@@ -105,7 +131,8 @@ interface YachtsResponse {
   yachts: YachtsApiResponse[];
   total: number;
   totalPages: number;
-  currentPage: number;
+  currentPage?: number;
+  page?: number; // Backend returns 'page' not 'currentPage'
 }
 
 interface YachtsState {
@@ -114,6 +141,7 @@ interface YachtsState {
   allYachts: YachtsApiResponse[];
   error: string | null;
   addLoading: boolean;
+  updateLoading: boolean;
   total: number;
   totalPages: number;
   currentPage: number;
@@ -128,6 +156,7 @@ const initialState: YachtsState = {
   allYachts: [],
   error: null,
   addLoading: false,
+  updateLoading: false,
   total: 0,
   totalPages: 0,
   currentPage: 1,
@@ -146,17 +175,79 @@ export const addYachts = createAsyncThunk<
   async (credentials, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post(
-        "https://awais.thedevapp.online/yacht/add-yacht",
-        credentials,
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
+      const formData = new FormData();
+
+      const translations = {
+        en: {
+          slug: credentials.slug?.trim(),
+          title: credentials.title?.trim(),
+          dayCharter: credentials.dayCharter?.trim() || "",
+          overnightCharter: credentials.overnightCharter?.trim() || "",
+          aboutThisBoat: credentials.aboutThisBoat?.trim() || "",
+          specifications: credentials.specifications?.trim() || "",
+          boatLayout: credentials.boatLayout?.trim() || "",
+          tags: credentials.tags || [],
+        },
+      };
+
+      formData.append("translations", JSON.stringify(translations));
+
+      const entries: Record<string, unknown> = {
+        boatType: credentials.boatType,
+        price: credentials.price,
+        capacity: credentials.capacity,
+        length: credentials.length,
+        lengthRange: credentials.lengthRange,
+        cabins: credentials.cabins,
+        bathrooms: credentials.bathrooms,
+        passengerDayTrip: credentials.passengerDayTrip,
+        passengerOvernight: credentials.passengerOvernight,
+        guests: credentials.guests,
+        guestsRange: credentials.guestsRange,
+        dayTripPrice: credentials.dayTripPrice,
+        overnightPrice: credentials.overnightPrice,
+        daytripPriceEuro: credentials.daytripPriceEuro,
+        videoLink: credentials.videoLink,
+        badge: credentials.badge,
+        slug: credentials.slug?.trim(),
+        design: credentials.design,
+        built: credentials.built,
+        cruisingSpeed: credentials.cruisingSpeed,
+        lengthOverall: credentials.lengthOverall,
+        fuelCapacity: credentials.fuelCapacity,
+        waterCapacity: credentials.waterCapacity,
+        code: credentials.code,
+        type: credentials.type,
+        displayOrder: credentials.displayOrder ?? 9999,
+      };
+
+      Object.entries(entries).forEach(([key, value]) => {
+        // Send empty strings to preserve them in the database
+        if (value !== undefined && value !== null) {
+          formData.append(key, String(value));
         }
-      );
+      });
+
+      // Primary image (required)
+      if (credentials.primaryImage) {
+        formData.append("primaryImage", credentials.primaryImage);
+      }
+
+      // Gallery images
+      if (Array.isArray(credentials.galleryImages)) {
+        credentials.galleryImages.forEach((file) => {
+          formData.append("galleryImages", file);
+        });
+      }
+
+      const response = await axios.post(`${API_URL}/yacht/add-yacht`, formData, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 1200000, // 20 minutes (increased for translation processing)
+      });
       if (response?.data.error) {
         throw new Error(
           response?.data?.error?.message || "Something went wrong"
@@ -185,7 +276,7 @@ export const getYachts = createAsyncThunk<
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://awais.thedevapp.online/yacht/all-yachts?page=${page}&limit=${limit}`,
+        `${API_URL}/yacht/all-yachts?page=${page}&limit=${limit}`,
         {
           withCredentials: true,
           headers: {
@@ -218,15 +309,12 @@ export const getYachtsById = createAsyncThunk(
   ) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `https://awais.thedevapp.online/yacht?id=${yachtsId}`,
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.get(`${API_URL}/yacht?id=${yachtsId}`, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return {
         yachts: response.data.data
       };
@@ -247,15 +335,79 @@ export const updateYachts = createAsyncThunk(
     { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
+      const formData = new FormData();
+
+      const translations = {
+        en: {
+          slug: payload.slug?.trim(),
+          title: payload.title?.trim(),
+          dayCharter: payload.dayCharter?.trim() || "",
+          overnightCharter: payload.overnightCharter?.trim() || "",
+          aboutThisBoat: payload.aboutThisBoat?.trim() || "",
+          specifications: payload.specifications?.trim() || "",
+          boatLayout: payload.boatLayout?.trim() || "",
+          tags: payload.tags || [],
+        },
+      };
+
+      formData.append("translations", JSON.stringify(translations));
+
+      const entries: Record<string, unknown> = {
+        boatType: payload.boatType,
+        price: payload.price,
+        capacity: payload.capacity,
+        length: payload.length,
+        lengthRange: payload.lengthRange,
+        cabins: payload.cabins,
+        bathrooms: payload.bathrooms,
+        passengerDayTrip: payload.passengerDayTrip,
+        passengerOvernight: payload.passengerOvernight,
+        guests: payload.guests,
+        guestsRange: payload.guestsRange,
+        dayTripPrice: payload.dayTripPrice,
+        overnightPrice: payload.overnightPrice,
+        daytripPriceEuro: payload.daytripPriceEuro,
+        videoLink: payload.videoLink,
+        badge: payload.badge,
+        slug: payload.slug?.trim(),
+        design: payload.design,
+        built: payload.built,
+        cruisingSpeed: payload.cruisingSpeed,
+        lengthOverall: payload.lengthOverall,
+        fuelCapacity: payload.fuelCapacity,
+        waterCapacity: payload.waterCapacity,
+        code: payload.code,
+        type: payload.type,
+        displayOrder: payload.displayOrder ?? 9999,
+      };
+
+      Object.entries(entries).forEach(([key, value]) => {
+        // Send empty strings to preserve them in the database
+        if (value !== undefined && value !== null) {
+          formData.append(key, String(value));
+        }
+      });
+
+      if (payload.primaryImage) {
+        formData.append("primaryImage", payload.primaryImage);
+      }
+
+      if (Array.isArray(payload.galleryImages)) {
+        payload.galleryImages.forEach((file) => {
+          formData.append("galleryImages", file);
+        });
+      }
+
       const response = await axios.put(
-        `https://awais.thedevapp.online/yacht/edit-yacht?id=${yachtsId}`,
-        payload,
+        `${API_URL}/yacht/edit-yacht?id=${yachtsId}`,
+        formData,
         {
           withCredentials: true,
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "multipart/form-data",
           },
+          timeout: 1200000, // 20 minutes (same as add - allows time for translations ~5min + image uploads + processing)
         }
       );
       if (response?.data.error) {
@@ -287,7 +439,7 @@ export const deleteYachts = createAsyncThunk<
     try {
       const token = localStorage.getItem("token");
       const response = await axios.delete(
-        `https://awais.thedevapp.online/yacht/delete-yacht?id=${id}`,
+        `${API_URL}/yacht/delete-yacht?id=${id}`,
         {
           withCredentials: true,
           headers: {
@@ -325,7 +477,7 @@ export const publishYacht = createAsyncThunk<
         status: status
       };
       const response = await axios.patch(
-        `https://awais.thedevapp.online/yacht/update-status?id=${yachtId}`,
+        `${API_URL}/yacht/update-status?id=${yachtId}`,
         payload,
         {
           withCredentials: true,
@@ -390,11 +542,26 @@ const yachtsSlice = createSlice({
       })
       .addCase(getYachts.fulfilled, (state, action) => {
         state.getLoading = false;
-        state.allYachts = action.payload.yachts;
-        state.total = action.payload.total;
-        state.totalPages = action.payload.totalPages;
-        state.currentPage = action.payload.currentPage;
+        // Ensure yachts is always an array, handle both 'page' and 'currentPage' from backend
+        const yachts = Array.isArray(action.payload.yachts) ? action.payload.yachts : [];
+        console.log('[yachtsSlice] getYachts.fulfilled:', {
+          yachtsCount: yachts.length,
+          total: action.payload.total,
+          totalPages: action.payload.totalPages,
+          page: action.payload.page,
+          currentPage: action.payload.currentPage,
+          payloadKeys: Object.keys(action.payload),
+        });
+        state.allYachts = yachts;
+        state.total = action.payload.total || 0;
+        state.totalPages = action.payload.totalPages || 0;
+        state.currentPage = action.payload.page || action.payload.currentPage || 1;
         state.error = null;
+        console.log('[yachtsSlice] State after update:', {
+          allYachtsLength: state.allYachts.length,
+          total: state.total,
+          totalPages: state.totalPages,
+        });
       })
       .addCase(getYachts.rejected, (state, action) => {
         state.getLoading = false;
@@ -419,16 +586,16 @@ const yachtsSlice = createSlice({
       })
       // Update Yacht
       .addCase(updateYachts.pending, (state) => {
-        state.loading = true;
+        state.updateLoading = true;
         state.error = null;
       })
       .addCase(updateYachts.fulfilled, (state, action) => {
-        state.loading = false;
+        state.updateLoading = false;
         state.yachts = action.payload;
         state.error = null;
       })
       .addCase(updateYachts.rejected, (state, action) => {
-        state.loading = false;
+        state.updateLoading = false;
         const payload = action.payload as { error: { message: string } };
         state.error = payload?.error?.message || "Failed to update yacht.";
       })

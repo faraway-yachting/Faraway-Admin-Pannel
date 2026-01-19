@@ -1,15 +1,30 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios, { AxiosError } from "axios";
+import { getBackendUrl } from "@/lib/env";
 
-// Types
-export interface Blog {
-  _id?: string;
-  title?: string;
+// Get API URL from env utility (handles both NEXT_PUBLIC_BACKEND_URL and BACKEND_URL)
+const API_URL = getBackendUrl();
+
+export interface BlogTranslation {
   slug?: string;
+  title?: string;
   shortDescription?: string;
   detailDescription?: string;
+}
+
+export interface Blog {
+  _id?: string;
   image?: File | string;
   status?: "draft" | "published";
+  translations?: {
+    en?: BlogTranslation;
+    fr?: BlogTranslation;
+    de?: BlogTranslation;
+    ru?: BlogTranslation;
+    zh?: BlogTranslation;
+    th?: BlogTranslation;
+    ar?: BlogTranslation;
+  };
   createdAt?: string;
   updatedAt?: string;
 }
@@ -90,26 +105,30 @@ export const addBlog = createAsyncThunk<
       const token = localStorage.getItem("token");
       
       const formData = new FormData();
-      formData.append("title", credentials.title);
-      formData.append("slug", credentials.slug);
+
+      // Build translations payload (model-style)
+      const translations = {
+        en: {
+          slug: credentials.slug.trim(),
+          title: credentials.title.trim(),
+          shortDescription: credentials.shortDescription.trim(),
+          detailDescription: credentials.detailDescription.trim(),
+        },
+      };
+
+      formData.append("translations", JSON.stringify(translations));
       formData.append("status", credentials.status);
-      formData.append("shortDescription", credentials.shortDescription);
-      formData.append("detailDescription", credentials.detailDescription);
       if (credentials.image) {
         formData.append("image", credentials.image);
       }
 
-      const response = await axios.post(
-        "https://awais.thedevapp.online/blog/add-blog",
-        formData,
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await axios.post(`${API_URL}/blog/add-blog`, formData, {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
       if (response?.data.error) {
         throw new Error(
           response?.data?.error?.message || "Something went wrong"
@@ -138,7 +157,7 @@ export const getBlogs = createAsyncThunk<
     try {
       const token = localStorage.getItem("token");
       const response = await axios.get(
-        `https://awais.thedevapp.online/blog/all-blogs?page=${page}&limit=${limit}`,
+        `${API_URL}/blog/all-blogs?page=${page}&limit=${limit}`,
         {
           withCredentials: true,
           headers: {
@@ -151,7 +170,9 @@ export const getBlogs = createAsyncThunk<
           response?.data?.error?.message || "Something went wrong"
         );
       }
-      return response.data.data;
+      const data = response.data.data;
+      // Return blogs with translations structure - no need to flatten
+      return data;
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{ message: string }>;
       const message =
@@ -175,14 +196,17 @@ export const getBlogById = createAsyncThunk<
       const token = localStorage.getItem("token");
 
       const response = await axios.get(
-        `https://awais.thedevapp.online/blog/blogByID?id=${blogId}`,
+        `${API_URL}/blog/blogByID?id=${blogId}`,
         {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      return response.data.data;
+      const blogData = response.data.data;
+      
+      // Return blog with translations structure - no need to flatten
+      return blogData;
      
     } catch (error) {
       let message = "Something went wrong";
@@ -237,7 +261,7 @@ export const updateBlog = createAsyncThunk<
       }
 
       const response = await axios.put(
-        `https://awais.thedevapp.online/blog/edit-blog?id=${blogId}`,
+        `${API_URL}/blog/edit-blog?id=${blogId}`,
         formData,
         {
           withCredentials: true,
@@ -254,7 +278,9 @@ export const updateBlog = createAsyncThunk<
         throw new Error(response.data.error.message || "API returned an error");
       }
 
-      return response.data;
+      // Backend returns { data: blog, message: "..." } structure
+      const updatedBlog = response.data.data || response.data;
+      return updatedBlog;
             } catch (error) {
       let message = "Something went wrong";
       
@@ -294,7 +320,7 @@ export const deleteBlog = createAsyncThunk<
       try {
         // Try yacht-style endpoint
         response = await axios.delete(
-          `https://awais.thedevapp.online/blog/delete-blog?id=${blogId}`,
+          `${API_URL}/blog/delete-blog?id=${blogId}`,
           {
             withCredentials: true,
             headers: {
@@ -305,7 +331,7 @@ export const deleteBlog = createAsyncThunk<
       } catch {
         // Try blog-specific endpoint
         response = await axios.delete(
-          `https://awais.thedevapp.online/blog/delete-blog/${blogId}`,
+          `${API_URL}/blog/delete-blog/${blogId}`,
           {
             withCredentials: true,
             headers: {
@@ -351,7 +377,7 @@ export const publishBlog = createAsyncThunk<
       try {
         // Try yacht-style endpoint
         response = await axios.patch(
-          `https://awais.thedevapp.online/blog/update-status?id=${blogId}`,
+          `${API_URL}/blog/update-status?id=${blogId}`,
           { status },
           {
             withCredentials: true,
@@ -365,7 +391,7 @@ export const publishBlog = createAsyncThunk<
         try {
           // Try blog-specific endpoint
           response = await axios.patch(
-            `https://awais.thedevapp.online/blog/update-status${blogId}`,
+            `${API_URL}/blog/update-status${blogId}`,
             { status },
             {
               withCredentials: true,
@@ -378,7 +404,7 @@ export const publishBlog = createAsyncThunk<
         } catch {
           // Try using the update-blog endpoint with status
           response = await axios.put(
-            `https://awais.thedevapp.online/blog/update-status${blogId}`,
+            `${API_URL}/blog/update-status${blogId}`,
             { status },
             {
               withCredentials: true,
@@ -480,8 +506,18 @@ const blogSlice = createSlice({
       })
       .addCase(updateBlog.fulfilled, (state, action) => {
         state.addLoading = false;
-        state.blogs = action.payload;
-        state.currentBlog = action.payload; // Also update currentBlog
+        state.error = null;
+        // Update currentBlog with the updated blog data
+        state.currentBlog = action.payload;
+        // Update the blog in the allBlogs array if it exists
+        if (action.payload._id) {
+          const index = state.allBlogs.findIndex(
+            (blog) => blog._id === action.payload._id
+          );
+          if (index !== -1) {
+            state.allBlogs[index] = action.payload;
+          }
+        }
       })
       .addCase(updateBlog.rejected, (state, action) => {
         state.addLoading = false;

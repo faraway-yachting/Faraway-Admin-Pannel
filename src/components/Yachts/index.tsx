@@ -17,7 +17,7 @@ const YachtsDetail = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const dispatch = useDispatch<AppDispatch>();
-  const { allYachts, getLoading, totalPages, total } = useSelector((state: RootState) => state.yachts);
+  const { allYachts, getLoading, totalPages, total, error } = useSelector((state: RootState) => state.yachts);
   const [currentPages, setCurrentPages] = useState(1);
   const itemsPerPage = 10;
   const [yachtsToDelete, setYachtsToDelete] = useState<string | null>(null);
@@ -35,16 +35,51 @@ const YachtsDetail = () => {
   }, []);
 
   useEffect(() => {
-    dispatch(getYachts({ page: currentPages, limit: itemsPerPage }));
+    dispatch(getYachts({ page: currentPages, limit: itemsPerPage }))
+      .unwrap()
+      .catch((error) => {
+        console.error('[YachtsDetail] Failed to fetch yachts:', error);
+        toast.error(error?.error?.message || "Failed to load yachts. Please try again.");
+      });
   }, [currentPages, itemsPerPage, dispatch]);
 
+  // Show error toast when error state changes
+  useEffect(() => {
+    if (error && !getLoading) {
+      toast.error(error);
+    }
+  }, [error, getLoading]);
 
-  const filteredData = allYachts
+  // Sort yachts by displayOrder (ascending: 1, 2, 3...) to ensure order 1 shows first
+  // Always create array from allYachts, even if empty, to prevent crashes
+  const sortedYachts = (Array.isArray(allYachts) ? [...allYachts] : []).sort((a, b) => {
+    const orderA = a.displayOrder ?? 9999;
+    const orderB = b.displayOrder ?? 9999;
+    return orderA - orderB; // Ascending order: 1, 2, 3...
+  });
+
+  const filteredData = sortedYachts
     .filter(yachts =>
       yachts?.title?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    );
   const isFiltering = searchTerm.trim() !== '';
   const currentItems = filteredData;
+
+  // Debug logging for Vercel - moved after variable declarations
+  useEffect(() => {
+    console.log('[YachtsDetail] State Debug:', {
+      allYachts: allYachts,
+      allYachtsLength: allYachts?.length,
+      allYachtsIsArray: Array.isArray(allYachts),
+      sortedYachtsLength: sortedYachts.length,
+      currentItemsLength: currentItems.length,
+      getLoading,
+      error,
+      total,
+      totalPages,
+      currentPages,
+    });
+  }, [allYachts, sortedYachts, currentItems, getLoading, error, total, totalPages, currentPages]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -195,13 +230,24 @@ const YachtsDetail = () => {
           <div className="flex items-center justify-center h-[calc(100vh-14.1rem)]">
             <div className="w-10 h-10 border-3 border-t-transparent border-[#012A50] rounded-full animate-spin" />
           </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-[calc(100vh-14.1rem)] text-lg text-red-600">
+            <p className="mb-2">Error loading yachts</p>
+            <p className="text-sm text-gray-600">{error}</p>
+            <button
+              onClick={() => dispatch(getYachts({ page: currentPages, limit: itemsPerPage }))}
+              className="mt-4 px-4 py-2 bg-[#012A50] text-white rounded-md hover:bg-[#012A50]/90"
+            >
+              Retry
+            </button>
+          </div>
         ) : isFiltering && currentItems.length === 0 ? (
           <div className="flex items-center justify-center h-[calc(100vh-14.1rem)] text-lg text-[#012A50]">
             No data available.
           </div>
-        ) : allYachts?.length > 0 ? (
+        ) : (Array.isArray(allYachts) && allYachts.length > 0) || (Array.isArray(currentItems) && currentItems.length > 0) ? (
           <div className="grid grid-cols-1 gap-3 mt-[12px]">
-            {currentItems.map((yachtItem, yachtIndex) => {
+            {(currentItems.length > 0 ? currentItems : sortedYachts.length > 0 ? sortedYachts : allYachts).map((yachtItem, yachtIndex) => {
               const Box = [
                 {
                   id: 1,
@@ -243,7 +289,16 @@ const YachtsDetail = () => {
                     />
                   </div>
                   <div className="pt-[4px] border-r border-[#D1D1D1] pr-5 w-[70%]">
-                    <h3 className="font-plusjakarta font-extrabold text-[26px] text-[#0061B1]">{yachtItem.title}</h3>
+                    <div className="flex flex-wrap items-center gap-3 mb-2">
+                      <h3 className="font-plusjakarta font-extrabold text-[26px] text-[#0061B1] flex-1 min-w-0 break-words">{yachtItem.title}</h3>
+                      <span className={`px-3 py-1 text-sm font-semibold rounded-full whitespace-nowrap flex-shrink-0 ${
+                        yachtItem.displayOrder !== undefined && yachtItem.displayOrder !== 9999
+                          ? "bg-[#012A50] text-white"
+                          : "bg-gray-300 text-gray-600"
+                      }`}>
+                        Order: {yachtItem.displayOrder ?? 9999}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-2 mt-[8px]">
                       {Box.map((ft, index) => (
                         <div
@@ -270,7 +325,7 @@ const YachtsDetail = () => {
                       ))}
                     </div>
                     <div className="flex gap-2 mt-[28px] items-center">
-                      {yachtItem.galleryImages.slice(0, 4).map((sk, index) => (
+                      {(yachtItem.galleryImages || []).slice(0, 4).map((sk, index) => (
                         <div key={index} className="flex items-center relative">
                           <Image
                             src={sk}

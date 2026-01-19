@@ -107,7 +107,7 @@ export const NewYachtsData: NewYachtsFormSection[] = [
       { label: "Fuel Capacity", placeholder: "" },
       { label: "Water Capacity", placeholder: "" },
       { label: "Code", placeholder: "" },
-    
+      { label: "Display Order", placeholder: "e.g., 1 (lower number = appears first)", type: "number" },
       { label: "Gallery Images", placeholder: "" },
     ],
   },
